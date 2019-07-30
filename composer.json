@@ -1,0 +1,45 @@
+{
+  "name": "fast_dog/menu",
+  "type": "project",
+  "description": "FastDog CMS Menu module.",
+  "keywords": [
+    "FastDog CMS",
+    "laravel"
+  ],
+  "license": "MIT",
+  "require": {
+    "php": "^7.1.3",
+    "fast_dog/core": "dev-master",
+    "baum/baum": "~1.1"
+  },
+  "require-dev": {
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true
+  },
+  "extra": {
+    "laravel": {
+      "dont-discover": [
+        "*"
+      ]
+    }
+  },
+  "autoload": {
+    "psr-4": {
+      "FastDog\\Menu\\": "src/"
+    },
+    "classmap": [
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "scripts": {
+  }
+}
