@@ -1,11 +1,9 @@
 <?php
 
-namespace FastDog\Media;
+namespace FastDog\Menu;
 
 
 use FastDog\Core\Models\ModuleManager;
-
-use FastDog\Menu\Menu;
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
 
 /**
