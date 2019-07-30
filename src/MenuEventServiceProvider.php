@@ -1,10 +1,8 @@
 <?php
 
-namespace FastDog\Media;
+namespace FastDog\Menu;
 
-use FastDog\Core\Models\DomainManager;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Arr;
 
 class MenuEventServiceProvider extends ServiceProvider
 {
