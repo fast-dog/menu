@@ -579,17 +579,17 @@ XML;
             'route' => '/menu/index',
             'new' => '/menu/item/0'
         ]);
-        array_push($result, [
+        array_push($result['children'], [
             'icon' => 'fa-power-off',
             'name' => trans('menu::interface.Диагностика'),
             'route' => '/menu/diagnostic',
         ]);
-        array_push($result, [
+        array_push($result['children'], [
             'icon' => 'fa-sitemap',
             'name' => trans('menu::interface.Карта сайта'),
             'route' => '/menu/sitemap',
         ]);
-        array_push($result, [
+        array_push($result['children'], [
             'icon' => 'fa-gears',
             'name' => trans('menu::interface.Настройки'),
             'route' => '/menu/configuration',

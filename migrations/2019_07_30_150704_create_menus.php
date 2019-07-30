@@ -25,6 +25,8 @@ class CreateMenus extends Migration
                 $table->string('name')->comment('Название');
                 $table->string('route')->comment('Маршрут');
                 $table->string('alias')->comment('Псевдоним');
+                $table->tinyInteger(\FastDog\Menu\Models\Menu::STATE)
+                    ->default(\FastDog\Menu\Models\Menu::STATE_NOT_PUBLISHED)->comment('Состояние');
                 $table->json('data')->comment('Дополнительные параметры');
                 $table->integer('stat_success')->default(0)->comment('Успешных переходов');
                 $table->integer('stat_redirect')->default(0)->comment('Перенаправлений');
