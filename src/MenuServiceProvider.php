@@ -98,7 +98,7 @@ class MenuServiceProvider extends LaravelServiceProvider
      */
     private function handleLang(): void
     {
-        $path = __DIR__ . '..' .   DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR;
+        $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR;
 
         $this->loadTranslationsFrom($path, self::NAME);
         $this->publishes([
