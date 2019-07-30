@@ -2,17 +2,23 @@
 
 namespace FastDog\Menu;
 
-
+use FastDog\Config\Models\Translate;
+use FastDog\Core\Interfaces\ModuleInterface;
+use FastDog\Core\Interfaces\PrepareContent;
+use FastDog\Core\Models\Components;
+use FastDog\Core\Models\DomainManager;
+use FastDog\Core\Models\ModuleManager;
+use FastDog\Core\Store;
 use FastDog\Menu\Models\Menu as BaseMenu;
-use FastDog\Menu\Models\MenuRouterCheckResult;
-use FastDog\Menu\Models\MenuStatistic;
 use FastDog\Menu\Models\SiteMap;
 use FastDog\Menu\Events\MenuPrepare;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 use SimpleXMLElement;
-use Illuminate\Database\Eloquent\Collection as BaseCollection;
 
 /**
  * Меню навигации
@@ -165,100 +171,14 @@ XML;
         return abort(400);
     }
 
-    /**
-     * События обрабатываемые модулем
-     *
-     * @return void
-     */
-    public function initEvents()
-    {
-        $paths = array_first(\Config::get('view.paths'));
-
-        $isRedis = config('cache.default') == 'redis';
-        $key = __METHOD__ . '::' . DomainManager::getSiteId() . '::events';
-        $result = ($isRedis) ? \Cache::tags(['menu'])->get($key, null) : \Cache::get($key, null);
-
-        if ($result === null) {
-            $result = [
-                'FastDog\Menu\Events\MenuItemBeforeSave' => [
-                    'FastDog\Menu\Listeners\MenuItemBeforeSave',
-                ],
-                'FastDog\Menu\Events\MenuItemAfterSave' => [
-                    'FastDog\Menu\Listeners\MenuItemAfterSave',
-                ],
-                'FastDog\Menu\Events\MenuItemAdminPrepare' => [
-                    'App\Core\Listeners\AdminItemPrepare',// <-- Поля даты обновления и т.д.
-                    'App\Core\Listeners\MetadataAdminPrepare',// <-- SEO
-                    'FastDog\Menu\Listeners\MenuItemAdminPrepare',
-                    'FastDog\Menu\Listeners\MenuItemSetEditorForm',
-                ],
-                'FastDog\Menu\Events\MenuItemsAdminPrepare' => [
-                    'FastDog\Menu\Listeners\MenuItemsAdminPrepare',
-                ],
-                'FastDog\Menu\Events\MenuPrepare' => [
-                    'FastDog\Menu\Listeners\MenuPrepare',
-                ],
-                'FastDog\Menu\Events\CatalogCreateProperty' => [
-                    'FastDog\Menu\Listeners\CatalogCreateProperty',
-                ],
-            ];
-
-            $paths = array_first(\Config::get('view.paths'));
-            /**
-             * Регистрация событий для публичного раздела сайта
-             */
-            foreach (["static" => "/modules/menu/static/*.blade.php",
-                         "index" => "/modules/menu/*.blade.php",
-                     ] as $templatePath) {
-                $templatePath = array_first((array)$templatePath);
-                $templates = $this->getTemplates($paths . $templatePath, true);
-
-                foreach ($templates as $template) {
-                    foreach ($template as $items) {
-                        if (is_array($items)) {
-                            foreach ($items as $item) {
-                                //$dir = dirname(view('theme::modules.' . $item['id'])->getPath());
-//                                $baseName = camel_case(str_replace('.', '_', $item['id']));
-                                $baseName = substr(camel_case(str_replace('.', '_', $item['id'])), -11);
-                                $beforeRendingEvent = 'FastDog\Menu\Events\Site\\' . ucfirst($baseName . 'BeforeRending');
-
-                                if (class_exists($beforeRendingEvent)) {
-                                    $beforeRendingListener = 'FastDog\Menu\Listeners\Site\\' . ucfirst($baseName . 'BeforeRending');
-                                    if (class_exists($beforeRendingListener)) {
-                                        $result[$beforeRendingEvent][$beforeRendingListener] = $beforeRendingListener;
-                                    }
-                                }
-
-                                $afterRendingEvent = 'FastDog\Menu\Events\Site\\' . ucfirst($baseName . 'AfterRending');
-                                if (class_exists($afterRendingEvent)) {
-                                    $afterRendingListener = 'FastDog\Menu\Listeners\Site\\' . ucfirst($baseName . 'AfterRending');
-                                    if (class_exists($afterRendingListener)) {
-                                        $result[$afterRendingEvent][$afterRendingListener] = $afterRendingListener;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if ($isRedis) {
-                \Cache::tags(['menu'])->put($key, $result, config('cache.ttl_core', 5));
-            } else {
-                \Cache::put($key, $result, config('cache.ttl_core', 5));
-            }
-        }
-
-        return $result;
-    }
 
     /**
-     * Возвращает доступные шаблоны
+     * Доступные шаблоны
      *
-     * @param string $paths
-     * @param bool $skip_load_raw
-     * @return array
+     * @param  $paths
+     * @return null|array
      */
-    public function getTemplates($paths = "/modules/menu/*.blade.php", $skip_load_raw = false)
+    public function getTemplates($paths = ''): array
     {
         $result = [];
 
@@ -277,7 +197,6 @@ XML;
                 if (file_exists(dirname($currentPath) . '/.description.php') && $description == []) {
                     $description = include dirname($currentPath) . '/.description.php';
                 }
-
                 foreach (glob($currentPath) as $filename) {
                     if (!isset($result[$code])) {
                         $result[$code]['templates'] = [];
@@ -285,7 +204,6 @@ XML;
                     $tmp = explode('/', $filename);
 
                     $count = count($tmp);
-
                     if ($count >= 2) {
                         $search = array_search($_code, $tmp);
                         if ($search) {
@@ -294,7 +212,7 @@ XML;
                         $templateName = implode('.', $tmp);
 
                         $templateName = str_replace(['.blade.php'], [''], $templateName);
-                        $name = array_last(explode('.', $templateName));
+                        $name = Arr::last(explode('.', $templateName));
 
                         if (isset($description[$name])) {
                             $name = $description[$name];
@@ -305,8 +223,8 @@ XML;
                         array_push($result[$code]['templates'], [
                             'id' => $id,
                             'name' => $name,
-                            'translate' => ($skip_load_raw === false) ? Translate::getSegmentAdmin($trans_key) : [],
-                            'raw' => ($skip_load_raw === false) ? File::get(view($id)->getPath()) : [],
+                            'translate' => Translate::getSegmentAdmin($trans_key),
+                            'raw' => File::get(view($id)->getPath()),
                         ]);
                     }
                 }
@@ -340,22 +258,18 @@ XML;
     public function getMenuType()
     {
         return [
-            (object)[
-                'id' => 'menu',
-                'name' => 'Меню :: Родительский тип меню',
-                'sort' => 1,
-            ],
-            (object)[
-                'id' => 'static',
-                'name' => 'Меню :: Внешняя ссылка',
-                'sort' => 20,
-            ],
-            (object)[
-                'id' => 'alias',
-                'name' => 'Меню :: Псевдоним',
-                'sort' => 30,
-            ],
+            ['id' => 'menu', 'name' => trans('menu::menu.Меню :: Родительский тип меню'), 'sort' => 1,],
+            ['id' => 'static', 'name' => trans('menu::menu.Меню :: Внешняя ссылка'), 'sort' => 20,],
+            ['id' => 'alias', 'name' => trans('menu::menu.Меню :: Псевдоним'), 'sort' => 30,],
         ];
+    }
+
+    /**
+     * @return array
+     */
+    public function getTemplatesPaths(): array
+    {
+        return [];
     }
 
     /**
@@ -364,32 +278,71 @@ XML;
      * @param bool $includeTemplates
      * @return array|null
      */
-    public function getModuleInfo($includeTemplates = true)
+    public function getModuleInfo(): array
     {
-        $result = [];
-        $paths = array_first(\Config::get('view.paths'));
-        $templates_paths = array_first($this->config->{'templates_paths'});
-        if (isset($this->config->menu)) {
-            foreach ($this->config->menu as $item) {
-                if (isset($item->id)) {
-                    $templates = [];
-                    if ($includeTemplates && isset($templates_paths->{$item->id})) {
-                        $templates = $this->getTemplates($paths . $templates_paths->{$item->id});
-                    }
+        $paths = Arr::first(config('view.paths'));
+        $templates_paths = $this->getTemplatesPaths();
+
+        return [
+            'id' => self::MODULE_ID,
+            'menu' => function() use ($paths, $templates_paths) {
+                $result = [];
+                foreach ($this->getMenuType() as $id => $item) {
                     array_push($result, [
-                        'id' => $item->id,
-                        'name' => $item->name,
-                        'templates' => $templates,
+                        'id' => $id,
+                        'name' => $item,
+                        'templates' => (isset($templates_paths[$id])) ? $this->getTemplates($paths . $templates_paths[$id]) : [],
                         'class' => __CLASS__,
                     ]);
+                }
+
+                return $result;
+            },
+            'templates_paths' => $templates_paths,
+            'module_type' => $this->getMenuType(),
+            'admin_menu' => function() {
+                return $this->getAdminMenuItems();
+            },
+            'access' => function() {
+                return [
+                    '000',
+                ];
+            },
+        ];
+    }
+
+
+    /**
+     * Типы меню в проекте
+     *
+     * @return array
+     */
+    public static function getTypes()
+    {
+        $result = [];
+        /**
+         * @var  $moduleManager ModuleManager
+         */
+        $moduleManager = \App::make('ModuleManager');
+        $modules = $moduleManager->getModules();
+        /**
+         * @var $module ModuleInterface
+         */
+        foreach ($modules as $module) {
+            $moduleType = $module->getMenuType();
+            if (is_array($moduleType) && count($moduleType) > 0) {
+                foreach ($moduleType as $item) {
+                    array_push($result, (object)$item);
                 }
             }
         }
 
+        usort($result, function ($a, $b) {
+            return $a->sort - $b->sort;
+        });
+
         return $result;
     }
-
-
     /**
      * Устанавливает параметры в контексте объекта
      *
@@ -421,7 +374,7 @@ XML;
      */
     public function getModuleType()
     {
-        $paths = array_first(\Config::get('view.paths'));
+        $paths = Arr::first(config('view.paths'));
 
         $result = [
             'id' => 'menu',
@@ -485,97 +438,6 @@ XML;
             'instance' => $request->input('data.route_instance'),
             'route' => implode('/', $result),
         ];
-    }
-
-    /**
-     * Инициализация уровней доступа ACL
-     *
-     * @return null
-     */
-    public function initAcl()
-    {
-        $domainList = DomainManager::getAccessDomainList();
-        foreach ($domainList as $domain) {
-            if ($domain['id'] !== '000') {
-                /**
-                 * Имя раздела разрешений должно быть в нижнем регистре из за
-                 * особенностей реализации методов в пакете kodeine/laravel-acl
-                 */
-                $name = strtolower(__CLASS__ . '::' . $domain['id']);
-
-                $roleGuest = DomainManager::getRoleGuest($domain['id']);
-                $data = [
-                    'name' => $name,
-                    'slug' => [
-                        'create' => false,
-                        'view' => true,
-                        'update' => false,
-                        'delete' => false,
-                        'reorder' => false,
-                        'info' => false,
-                        'api' => false,
-                    ],
-                    'description' => \GuzzleHttp\json_encode([
-                        'module_name' => 'Меню',
-                        'description' => 'ACL для домена #' . $domain['id'],
-                    ]),
-                ];
-                $permGuest = Permission::where([
-                    'name' => $data['name'] . '::guest',
-                ])->first();
-
-                if (!$permGuest) {
-                    $data['name'] = $name . '::guest';
-                    $permGuest = Permission::create($data);
-                    $roleGuest->assignPermission($permGuest);
-                } else {
-                    Permission::where('id', $permGuest->id)->update([
-                        'slug' => json_encode($data['slug']),
-                    ]);
-                }
-                $permUser = Permission::where([
-                    'name' => $data['name'] . '::user',
-                ])->first();
-                if (!$permUser) {
-                    $data['inherit_id'] = $permGuest->id;
-                    $data['name'] = $name . '::user';
-                    $permUser = Permission::create($data);
-                } else {
-                    Permission::where('id', $permUser->id)->update([
-                        'slug' => json_encode($data['slug']),
-                    ]);
-                }
-                if ($permUser) {
-                    $roleUser = DomainManager::getRoleUser($domain['id']);
-                    if ($roleUser) {
-                        $roleUser->assignPermission($permUser);
-                    }
-
-                    $roleAdmin = DomainManager::getRoleAdmin($domain['id']);
-                    $data['slug'] = [
-                        'create' => true,
-                        'update' => true,
-                        'delete' => true,
-                        'reorder' => true,
-                        'info' => true,
-                        'api' => true,
-                    ];
-                    $permAdmin = Permission::where([
-                        'name' => $data['name'] . '::admin',
-                    ])->first();
-                    if (!$permAdmin) {
-                        $data['name'] = $name . '::admin';
-                        $data['inherit_id'] = $permUser->id;
-                        $permAdmin = Permission::create($data);
-                        $roleAdmin->assignPermission($permAdmin);
-                    } else {
-                        Permission::where('id', $permAdmin->id)->update([
-                            'slug' => json_encode($data['slug']),
-                        ]);
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -654,7 +516,7 @@ XML;
             'module' => $module,
         ];
 
-        \Event::fire(new MenuPrepare($render_data));
+        event(new MenuPrepare($render_data));
 
         /**
          * События обработки шаблонов
@@ -694,60 +556,6 @@ XML;
     }
 
     /**
-     * Метод возвращает директорию модуля
-     *
-     * @return string
-     */
-    public function getModuleDir()
-    {
-        return dirname(__FILE__);
-    }
-
-    /**
-     * Возвращает параметры блоков добавляемых на рабочий стол администратора
-     *
-     * @return array
-     */
-    public function getDesktopWidget()
-    {
-        return [];
-    }
-
-    /**
-     * Схема установки модуля
-     *
-     * @param $allSteps
-     * @return mixed
-     */
-    public function getInstallStep(&$allSteps)
-    {
-        $last = array_last(array_keys($allSteps));
-
-        $allSteps[$last]['step'] = 'menu_init';
-        $allSteps['menu_init'] = [
-            'title_step' => trans('app.Модуль Меню: подготовка, создание таблиц'),
-            'step' => 'menu_install',
-            'stop' => false,
-            'install' => function($request) {
-                sleep(1);
-            },
-        ];
-        $allSteps['menu_install'] = [
-            'title_step' => trans('app.Модуль Меню: таблицы созданы'),
-            'step' => '',
-            'stop' => false,
-            'install' => function($request) {
-                Menu::createDbSchema();
-                MenuRouterCheckResult::createDbSchema();
-                MenuStatistic::createDbSchema();
-                sleep(1);
-            },
-        ];
-
-        return $allSteps;
-    }
-
-    /**
      * Меню администратора
      *
      * Возвращает пунты меню для раздела администратора
@@ -758,34 +566,35 @@ XML;
     {
         $result = [];
 
-        array_push($result, [
+        $result = [
             'icon' => 'fa-table',
-            'name' => trans('app.Управление'),
+            'name' => trans('menu::interface.Меню'),
+            'route' => '/menu',
+            'children' => [],
+        ];
+
+        array_push($result['children'], [
+            'icon' => 'fa-table',
+            'name' => trans('menu::interface.Управление'),
             'route' => '/menu/index',
+            'new' => '/menu/item/0'
         ]);
         array_push($result, [
-            'name' => '<i class="fa fa-power-off"></i> ' . trans('app.Диагностика'),
+            'icon' => 'fa-power-off',
+            'name' => trans('menu::interface.Диагностика'),
             'route' => '/menu/diagnostic',
         ]);
         array_push($result, [
-            'name' => '<i class="fa fa-sitemap"></i> ' . trans('app.Карта сайта'),
+            'icon' => 'fa-sitemap',
+            'name' => trans('menu::interface.Карта сайта'),
             'route' => '/menu/sitemap',
         ]);
         array_push($result, [
-            'name' => '<i class="fa fa-gears"></i> ' . trans('app.Настройки'),
+            'icon' => 'fa-gears',
+            'name' => trans('menu::interface.Настройки'),
             'route' => '/menu/configuration',
         ]);
 
         return $result;
-    }
-
-    /**
-     * Возвращает массив таблиц для резервного копирования
-     *
-     * @return array
-     */
-    public function getTables()
-    {
-        // TODO: Implement getTables() method.
     }
 }

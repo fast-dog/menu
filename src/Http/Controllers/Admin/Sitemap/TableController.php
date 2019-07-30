@@ -1,17 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dg
- * Date: 21.05.2018
- * Time: 10:44
- */
 
 namespace FastDog\Menu\Controllers\Admin\Sitemap;
 
-use App\Core\Table\Interfaces\TableControllerInterface;
-use App\Core\Table\Traits\TableTrait;
-use App\Http\Controllers\Controller;
-use FastDog\Menu\Config\Entity\DomainManager;
+
+use FastDog\Core\Http\Controllers\Controller;
+use FastDog\Core\Table\Interfaces\TableControllerInterface;
+use FastDog\Core\Table\Traits\TableTrait;
 use FastDog\Menu\Models\SiteMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -34,13 +28,10 @@ class TableController extends Controller implements TableControllerInterface
     {
         parent::__construct();
 
-        $this->page_title = trans('app.Меню навигации');
+        $this->page_title = trans('menu::interface.Меню навигации');
 
         $this->model = $model;
         $this->initTable();
-
-        $this->accessKey = strtolower(\FastDog\Menu\Menu::class) . '::'
-            . DomainManager::getSiteId() . '::guest';
     }
 
     /**
@@ -73,15 +64,26 @@ class TableController extends Controller implements TableControllerInterface
     {
         $result = self::paginate($request);
 
-        $this->breadcrumbs->push(['url' => '/menu/index', 'name' => trans('app.Меню навигации')]);
-        $this->breadcrumbs->push(['url' => false, 'name' => trans('app.Карта сайта')]);
+        $this->breadcrumbs->push(['url' => '/menu/index', 'name' => trans('menu::interface.Меню навигации')]);
+        $this->breadcrumbs->push(['url' => false, 'name' => trans('menu::interface.Карта сайта')]);
 
         return $this->json($result, __METHOD__);
     }
 
+    /**
+     * @param Request $request
+     */
     public function reorder(Request $request)
     {
         Artisan::call('sitemap', ['domain' => $request->root()]);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function items(Request $request): JsonResponse
+    {
+        // TODO: Implement items() method.
+    }
 }

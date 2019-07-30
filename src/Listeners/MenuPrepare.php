@@ -1,19 +1,12 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dg
- * Date: 06.01.2017
- * Time: 22:40
- */
 
 namespace FastDog\Menu\Listeners;
 
-use App\Core\Store;
-use FastDog\Menu\Config\Entity\DomainManager;
+
+use FastDog\Core\Store;
 use FastDog\Menu\Events\MenuPrepare as MenuPrepareEvent;
 use FastDog\Menu\Menu;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 
 /**
  * Обработка данных в публичной части

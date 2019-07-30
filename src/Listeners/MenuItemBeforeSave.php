@@ -1,17 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dg
- * Date: 18.12.2016
- * Time: 23:33
- */
-
 namespace FastDog\Menu\Listeners;
 
-use App\Core\Notifications;
+use FastDog\Core\Models\Notifications;
 use FastDog\Menu\Models\Menu;
 use FastDog\Menu\Events\MenuItemBeforeSave as MenuItemBeforeSaveEvent;
-use FastDog\Menu\Users\Entity\User;
+use FastDog\User\Models\User;
 use Illuminate\Http\Request;
 
 /**

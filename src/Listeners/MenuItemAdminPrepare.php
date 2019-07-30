@@ -1,24 +1,13 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dg
- * Date: 18.12.2016
- * Time: 23:33
- */
 
 namespace FastDog\Menu\Listeners;
 
-
-use App\Core\Module\ModuleManager;
-use FastDog\Menu\Catalog\Entity\Category;
-use FastDog\Menu\Config\Entity\DomainManager;
-use FastDog\Menu\Content\Entity\ContentCategory;
-use FastDog\Menu\Form\Entity\FormBase;
-use FastDog\Menu\Form\Entity\FormInterface;
-use FastDog\Menu\Media\Entity\GalleryItem;
-use FastDog\Menu\Models\Menu;
+use FastDog\Core\Models\ModuleManager;
+use FastDog\Media\Models\GalleryItem;
 use FastDog\Menu\Events\MenuItemAdminPrepare as MenuItemAdminPrepareEvent;
+use FastDog\Menu\Menu;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 /**
  * Обработка данных в разделе администрирования
@@ -96,13 +85,13 @@ class MenuItemAdminPrepare
          *  }
          */
         // Тип
-        $data['data']->type = array_first(array_filter(Menu::getTypes(), function ($element) use ($data) {
+        $data['data']->type = Arr::first(array_filter(Menu::getTypes(), function ($element) use ($data) {
             return $element->id == $data['type'];
         }));
         $menuRoots = Menu::getRoots();
 
         // Меню
-        $data['menu_id'] = array_first(array_filter($menuRoots, function ($element) use ($data) {
+        $data['menu_id'] = Arr::first(array_filter($menuRoots, function ($element) use ($data) {
 
             return $element['id'] == $data['menu_id'];
         }));
@@ -111,7 +100,7 @@ class MenuItemAdminPrepare
         $allMenu = Menu::getAll();
         if (isset($allMenu[$data['menu_id']['id']])) {
             //Родительский элемент
-            $data['parent_id'] = array_first(array_filter($allMenu[$data['menu_id']['id']], function ($element) use ($data) {
+            $data['parent_id'] = Arr::first(array_filter($allMenu[$data['menu_id']['id']], function ($element) use ($data) {
                 return $element['id'] == $data['parent_id'];
             }));
         }
@@ -148,7 +137,7 @@ class MenuItemAdminPrepare
             /**
              * @var $entityForm FormInterface
              */
-            $entityForm = array_first(array_filter($form->getList(), function (FormInterface $element) use ($data) {
+            $entityForm = Arr::first(array_filter($form->getList(), function (FormInterface $element) use ($data) {
 
                 return $element->getAction() == $data['data']->form_id;
             }));

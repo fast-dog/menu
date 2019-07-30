@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dg
- * Date: 18.12.2016
- * Time: 23:50
- */
 
 namespace FastDog\Menu\Events;
-
 
 use FastDog\Menu\Models\Menu;
 

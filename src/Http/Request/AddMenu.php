@@ -2,7 +2,8 @@
 
 namespace FastDog\Menu\Request;
 
-use FastDog\Menu\Users\Entity\User;
+
+use FastDog\User\User;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -51,8 +52,8 @@ class AddMenu extends FormRequest
     public function messages()
     {
         return [
-            'name.required' => trans('app.Поле "Название" обязательно для заполнения.'),
-            'type.required' => trans('app.Поле "Тип меню" обязательно для заполнения.'),
+            'name.required' => trans('menu::requests.add_menu.name.required'),
+            'type.required' => trans('menu::requests.add_menu.type.required'),
             //'menu_id.required' => trans('app.Поле "Меню" обязательно для заполнения.'),
         ];
     }
@@ -64,11 +65,11 @@ class AddMenu extends FormRequest
     public function getValidatorInstance()
     {
         $validator = parent::getValidatorInstance();
-        $validator->after(function () use ($validator) {
+        $validator->after(function() use ($validator) {
             $input = $this->all();
             if (isset($input['id']) && isset($input['depth'])) {
                 if ($input['depth'] > 1 && $input['menu_id'] == null) {
-                    $validator->errors()->add('menu_id', trans('app.Поле "Меню" обязательно для заполнения.'));
+                    $validator->errors()->add('menu_id', trans('menu::requests.add_menu.menu.required'));
                 }
 //                if ($input['depth'] == 1) {
 //                    $this->merge([

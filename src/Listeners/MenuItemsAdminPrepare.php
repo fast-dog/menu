@@ -1,15 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dg
- * Date: 18.12.2016
- * Time: 23:33
- */
 
 namespace FastDog\Menu\Listeners;
 
 
-use FastDog\Menu\Config\Entity\DomainManager;
+use FastDog\Core\Models\DomainManager;
 use FastDog\Menu\Events\MenuItemsAdminPrepare as MenuItemsAdminPrepareEvent;
 use FastDog\Menu\Menu;
 use Illuminate\Http\Request;
@@ -48,8 +42,7 @@ class MenuItemsAdminPrepare
          */
         $data = $event->getData();
 
-        if (DomainManager::checkIsDefault()) {
-        }
+
         foreach ($data['items'] as &$item) {
             $item['suffix'] = DomainManager::getDomainSuffix($item[Menu::SITE_ID]);
         }

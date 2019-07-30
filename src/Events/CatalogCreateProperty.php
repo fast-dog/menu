@@ -1,16 +1,16 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dg
- * Date: 025 25.09.18
- * Time: 11:51
- */
 
 namespace FastDog\Menu\Events;
 
 
 use FastDog\Menu\Menu;
 
+/**
+ * Class CatalogCreateProperty
+ * @package FastDog\Menu\Events
+ * @version 0.2.1
+ * @author Андрей Мартынов <d.g.dev482@gmail.com>
+ */
 class CatalogCreateProperty
 {
     /**

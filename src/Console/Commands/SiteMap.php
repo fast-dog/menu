@@ -3,6 +3,7 @@
 namespace FastDog\Menu\Console\Commands;
 
 
+use FastDog\Core\Models\DomainManager;
 use FastDog\Menu\Models\Menu;
 use FastDog\Menu\Models\MenuRouterCheckResult;
 use Carbon\Carbon;
@@ -13,12 +14,11 @@ use Illuminate\Database\Eloquent\Builder;
 /**
  * Карта сайта
  *
- * php artisan sitemap {domain=http://sahalin-ru.local}
+ * php artisan sitemap {domain=http://xxx-xxx-xxx.xx}
  *
  * @package App\Console\Commands
  * @version 0.2.1
  * @author Андрей Мартынов <d.g.dev482@gmail.com>
- *
  *
  */
 class SiteMap extends Command
@@ -69,7 +69,7 @@ class SiteMap extends Command
     {
         $routeList = [];
         request()->merge(['_site_id' => '000']);
-        \Config::set('app.url', $this->argument('domain'));
+        config('app.url', $this->argument('domain'));
         $site_id = DomainManager::getSiteId($this->argument('domain'));
 
 

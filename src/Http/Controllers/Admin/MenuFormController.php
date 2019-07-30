@@ -1,20 +1,14 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dg
- * Date: 17.04.2018
- * Time: 15:30
- */
 
 namespace FastDog\Menu\Controllers\Admin;
 
-use App\Core\BaseModel;
-use App\Core\Form\Interfaces\FormControllerInterface;
-use App\Core\Form\Traits\FormControllerTrait;
-use App\Core\Module\ModuleInterface;
-use App\Core\Module\ModuleManager;
-use App\Http\Controllers\Controller;
-use FastDog\Menu\Config\Entity\DomainManager;
+
+use FastDog\Core\Form\Interfaces\FormControllerInterface;
+use FastDog\Core\Form\Traits\FormControllerTrait;
+use FastDog\Core\Http\Controllers\Controller;
+use FastDog\Core\Interfaces\ModuleInterface;
+use FastDog\Core\Models\DomainManager;
+use FastDog\Core\Models\ModuleManager;
 use FastDog\Menu\Events\CatalogCreateProperty;
 use FastDog\Menu\Events\MenuItemAfterSave;
 use FastDog\Menu\Events\MenuItemBeforeSave;
@@ -42,7 +36,7 @@ class MenuFormController extends Controller implements FormControllerInterface
     public function __construct(Menu $model)
     {
         $this->model = $model;
-        $this->page_title = trans('app.Меню навигации');
+        $this->page_title = trans('menu::interface.Меню навигации');
         parent::__construct();
     }
 
@@ -52,7 +46,7 @@ class MenuFormController extends Controller implements FormControllerInterface
      */
     public function getEditItem(Request $request): JsonResponse
     {
-        $this->breadcrumbs->push(['url' => '/menu/index', 'name' => trans('app.Управление меню навигации')]);
+        $this->breadcrumbs->push(['url' => '/menu/index', 'name' => trans('menu::interface.Управление')]);
         $parent_id = \Route::input('parent_id', null);
         $parent = null;
         /**
@@ -72,10 +66,10 @@ class MenuFormController extends Controller implements FormControllerInterface
         }
 
         if ($parent) {
-            $this->breadcrumbs->push(['url' => '/menu/list/' . $parent->id, 'name' => $parent->{BaseModel::NAME}]);
+            $this->breadcrumbs->push(['url' => '/menu/list/' . $parent->id, 'name' => $parent->{Menu::NAME}]);
         }
         if ($this->item) {
-            $this->breadcrumbs->push(['url' => false, 'name' => $this->item->{BaseModel::NAME}]);
+            $this->breadcrumbs->push(['url' => false, 'name' => $this->item->{Menu::NAME}]);
         }
 
         //$result['items'] = Menu::getAll();
@@ -107,7 +101,7 @@ class MenuFormController extends Controller implements FormControllerInterface
         ])->first();
 
         if (null === $root) {
-            $root = Menu::where(function (Builder $query) use ($request) {
+            $root = Menu::where(function(Builder $query) use ($request) {
                 $query->where('lft', 1);
                 $query->where(Menu::SITE_ID, $request->input(Menu::SITE_ID . '.id', DomainManager::getSiteId()));
             })->first();
@@ -128,7 +122,7 @@ class MenuFormController extends Controller implements FormControllerInterface
             if (DomainManager::checkIsDefault() === false) {
                 return $this->json([
                     'success' => false,
-                    'message' => trans('app.Ошибка выполнения команды, Вам не разрешено добавление элементов в меню') .
+                    'message' => trans('menu::interface.error.Ошибка выполнения команды, Вам не разрешено добавление элементов в меню') .
                         ' "' . $root->{Menu::NAME} . '"',
                 ]);
             }
@@ -156,7 +150,7 @@ class MenuFormController extends Controller implements FormControllerInterface
                     if ($data['parent_id'] === $item->id) {
                         return $this->json([
                             'success' => false,
-                            'message' => trans('app.Ошибка выполнения команды, не верно задан родитель.'),
+                            'message' => trans('menu::interface.error.Ошибка выполнения команды, не верно задан родительский элемент.'),
                         ]);
                     }
                     $parent = Menu::find($data['parent_id']);
@@ -169,7 +163,7 @@ class MenuFormController extends Controller implements FormControllerInterface
                     } else {
                         return $this->json([
                             'success' => false,
-                            'message' => trans('app.Ошибка перемещения пункта меню, не разрешено перемещение пунктов с разными сайтами'),
+                            'message' => trans('menu::interface.error.Ошибка перемещения пункта меню, не разрешено перемещение пунктов с разными сайтами.'),
                         ]);
                     }
                 }
@@ -259,11 +253,12 @@ class MenuFormController extends Controller implements FormControllerInterface
                 }
             }
 
-            \Event::fire(new MenuItemBeforeSave($updateData, $item));
+            event(new MenuItemBeforeSave($updateData, $item));
 
             Menu::where('id', $data['id'])->update($updateData);
 
-            \Event::fire(new MenuItemAfterSave($result, $item));
+            event(new MenuItemAfterSave($result, $item));
+
             if ($request->has('set_properties')) {
                 /**
                  * Обновление свойств фильтра
@@ -275,7 +270,7 @@ class MenuFormController extends Controller implements FormControllerInterface
                 /**
                  * Обновление своиств фильтра пункта меню
                  */
-                \Event::fire(new CatalogCreateProperty($properties, $item));
+                event(new CatalogCreateProperty($properties, $item));
             }
             /**
              * Обновление шаблона
@@ -284,7 +279,7 @@ class MenuFormController extends Controller implements FormControllerInterface
                 $template = $request->input('template.id');
                 if (view()->exists($template)) {
                     $path = view($template)->getPath();
-                   // \File::put($path, $request->input('template_raw'));
+                    // \File::put($path, $request->input('template_raw'));
                 }
             }
 

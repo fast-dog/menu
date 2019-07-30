@@ -1,16 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dg
- * Date: 18.12.2016
- * Time: 23:50
- */
 
 namespace FastDog\Menu\Events;
 
 
-use App\Core\Interfaces\AdminPrepareEventInterface;
+use FastDog\Core\Interfaces\AdminPrepareEventInterface;
 use FastDog\Menu\Models\Menu;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Обработка данных в разделе администрирования
@@ -53,7 +48,7 @@ class MenuItemAdminPrepare implements AdminPrepareEventInterface
     /**
      * @return array
      */
-    public function getResult()
+    public function getResult(): array
     {
         return $this->result;
     }
@@ -61,7 +56,7 @@ class MenuItemAdminPrepare implements AdminPrepareEventInterface
     /**
      * @param array $result
      */
-    public function setResult($result)
+    public function setResult(array $result): void
     {
         $this->result = $result;
     }
@@ -69,7 +64,7 @@ class MenuItemAdminPrepare implements AdminPrepareEventInterface
     /**
      * @return Menu
      */
-    public function getItem()
+    public function getItem(): Model
     {
         return $this->item;
     }
@@ -77,7 +72,7 @@ class MenuItemAdminPrepare implements AdminPrepareEventInterface
     /**
      * @return array
      */
-    public function getData()
+    public function getData(): array
     {
         return $this->data;
     }
@@ -86,7 +81,7 @@ class MenuItemAdminPrepare implements AdminPrepareEventInterface
      * @param $data
      * @return void
      */
-    public function setData($data)
+    public function setData(array $data): void
     {
         $this->data = $data;
     }

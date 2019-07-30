@@ -4,9 +4,14 @@ namespace FastDog\Media;
 
 
 use FastDog\Core\Models\ModuleManager;
-use FastDog\Menu\Menu\Menu;
+
+use FastDog\Menu\Menu;
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
 
+/**
+ * Class MenuServiceProvider
+ * @package FastDog\Media
+ */
 class MenuServiceProvider extends LaravelServiceProvider
 {
     const NAME = 'menu';
@@ -23,24 +28,22 @@ class MenuServiceProvider extends LaravelServiceProvider
      */
     public function boot(): void
     {
-//        $this->handleConfigs();
+        $this->handleConfigs();
         $this->handleRoutes();
         $this->handleMigrations();
         $this->handleLang();
 
-        $this->loadViewsFrom(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR, 'elfinder');
-
-        $this->publishes([
-            __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR =>
-                base_path('resources/views/'),
-        ]);
+//        $this->publishes([
+//            __DIR__ . DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR =>
+//                base_path('resources/views/'),
+//        ]);
 
 
         /**
          * @var $moduleManager ModuleManager
          */
         $moduleManager = \App::make(ModuleManager::class);
-        $moduleManager->pushModule(Menu::MODULE_ID, (new Menu())->getModuleInfo(true));
+        $moduleManager->pushModule(Menu::MODULE_ID, (new Menu())->getModuleInfo());
     }
 
     /**
@@ -50,11 +53,7 @@ class MenuServiceProvider extends LaravelServiceProvider
      */
     public function register(): void
     {
-
-        $this->app->register(MediaEventServiceProvider::class);
-        $this->app->register(ElfinderServiceProviderFD::class);
-
-        $this->app->alias('Image', \Intervention\Image\Facades\Image::class);
+        $this->app->register(MenuEventServiceProvider::class);
     }
 
     /**
@@ -73,8 +72,8 @@ class MenuServiceProvider extends LaravelServiceProvider
      */
     private function handleConfigs(): void
     {
-        $configPath = __DIR__ . '/../config/media.php';
-        $this->publishes([$configPath => config_path('media.php')]);
+        $configPath = __DIR__ . '/../config/menu.php';
+        $this->publishes([$configPath => config_path('menu.php')]);
 
         $this->mergeConfigFrom($configPath, self::NAME);
     }
@@ -101,7 +100,7 @@ class MenuServiceProvider extends LaravelServiceProvider
      */
     private function handleLang(): void
     {
-        $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR;
+        $path = __DIR__ . DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR . 'lang' . DIRECTORY_SEPARATOR;
         $this->loadTranslationsFrom($path, self::NAME);
         $this->publishes([
             $path => resource_path('lang/vendor/fast_dog/' . self::NAME),

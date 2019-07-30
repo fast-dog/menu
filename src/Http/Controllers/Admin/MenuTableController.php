@@ -1,24 +1,21 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dg
- * Date: 17.04.2018
- * Time: 11:11
- */
 
 namespace FastDog\Menu\Controllers\Admin;
 
-use App\Core\Module\ModuleInterface;
-use App\Core\Module\ModuleManager;
-use App\Core\Table\Interfaces\TableControllerInterface;
-use App\Core\Table\Traits\TableTrait;
-use App\Http\Controllers\Controller;
-use FastDog\Menu\Config\Entity\DomainManager;
+
+use FastDog\Core\Http\Controllers\Controller;
+use FastDog\Core\Interfaces\ModuleInterface;
+use FastDog\Core\Models\DomainManager;
+use FastDog\Core\Models\ModuleManager;
+use FastDog\Core\Table\Interfaces\TableControllerInterface;
+use FastDog\Core\Table\Traits\TableTrait;
 use FastDog\Menu\Models\Menu;
 use FastDog\Menu\Events\MenuItemsAdminPrepare;
 use Baum\Extensions\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 /**
@@ -31,17 +28,6 @@ use Illuminate\Support\Collection;
 class MenuTableController extends Controller implements TableControllerInterface
 {
     use  TableTrait;
-
-    /**
-     * Имя родительского списка доступа
-     *
-     * из за реализации ACL в пакете kodeine/laravel-acl
-     * нужно использовать имя верхнего уровня: action.__CLASS__::SITE_ID::access_level
-     *
-     * @var string $accessKey
-     */
-    protected $accessKey = '';
-
 
     /**
      * Модель по которой будет осуществляться выборка данных
@@ -58,12 +44,11 @@ class MenuTableController extends Controller implements TableControllerInterface
     {
         parent::__construct();
 
-        $this->page_title = trans('app.Меню навигации');
+        $this->page_title = trans('menu::interface.Меню навигации');
 
         $this->model = $model;
         $this->initTable('tree');
 
-        $this->accessKey = strtolower(\FastDog\Menu\Menu::class) . '::' . DomainManager::getSiteId() . '::guest';
     }
 
     /**
@@ -94,7 +79,7 @@ class MenuTableController extends Controller implements TableControllerInterface
     {
         return collect([
             [
-                'name' => trans('app.Название'),
+                'name' => trans('menu::forms.general.fields.name'),
                 'key' => Menu::NAME,
                 'domain' => true,
                 'extra' => true,
@@ -115,7 +100,7 @@ class MenuTableController extends Controller implements TableControllerInterface
                 'class' => 'text-center',
             ],
             [
-                'name' => trans('app.Дата'),
+                'name' => trans('menu::forms.general.fields.created_at'),
                 'key' => 'created_at',
                 'width' => 150,
                 'link' => null,
@@ -147,10 +132,10 @@ class MenuTableController extends Controller implements TableControllerInterface
             'filters' => $this->getFilters(),
             'cols' => $this->getColsRoot(),
         ];
-        $this->breadcrumbs->push(['url' => false, 'name' => trans('app.Управление меню навигации')]);
+        $this->breadcrumbs->push(['url' => false, 'name' => trans('menu::interface.Управление')]);
         $scope = 'active';
 
-        $root = Menu::where(function (Builder $query) {
+        $root = Menu::where(function(Builder $query) {
             $query->where('lft', 1);
 
             $query->where(Menu::SITE_ID, DomainManager::getSiteId());
@@ -160,7 +145,7 @@ class MenuTableController extends Controller implements TableControllerInterface
         if (!$root) {
             Menu::create([
                 'parent_id' => 0,
-                Menu::NAME => trans('app.Корневой элемент') . '#' . DomainManager::getSiteId(),
+                Menu::NAME => trans('menu::interface.Корневой элемент') . '#' . DomainManager::getSiteId(),
                 Menu::ROUTE => '#',
                 Menu::SITE_ID => DomainManager::getSiteId(),
                 'lft' => 1,
@@ -172,17 +157,17 @@ class MenuTableController extends Controller implements TableControllerInterface
 
         Menu::where('lft', 1)
             ->get()
-            ->each(function (Menu $root) use (&$result, $limitDepth, $request, $scope, $prepareName) {
+            ->each(function(Menu $root) use (&$result, $limitDepth, $request, $scope, $prepareName) {
                 if ($root->{Menu::DEPTH} == 0 && $root->{Menu::SITE_ID} == DomainManager::getSiteId()) {
                     $result['set_root_id'] = $root->id;
                 }
                 $root->descendants()->limitDepth($limitDepth)
-                    ->where(function ($query) use ($request, &$scope) {
+                    ->where(function($query) use ($request, &$scope) {
                         $this->setFilters($query);
                     })
                     ->$scope()
                     ->get()
-                    ->each(function (Menu $item) use ($prepareName, &$result) {
+                    ->each(function(Menu $item) use ($prepareName, &$result) {
                         if ($item->{Menu::DEPTH} > 0) {
                             $countPublish = $item->getCountPublish();
                             $data = $item->getData(false);
@@ -206,11 +191,12 @@ class MenuTableController extends Controller implements TableControllerInterface
                     });
             });
 
-        \Event::fire(new MenuItemsAdminPrepare($result, $items));
+        event(new MenuItemsAdminPrepare($result, $items));
 
         if ($request->input('only_items', 'N') === 'Y') {
             unset($result['breadcrumbs'], $result['page_title'], $result['access']);
         }
+
         /**
          * @var $moduleManager ModuleManager
          */
@@ -218,7 +204,7 @@ class MenuTableController extends Controller implements TableControllerInterface
 
         //включить в ответ возможные шаблоны модуля
         if ($request->input('include_templates', 'N') === 'Y') {
-            $paths = array_first(\Config::get('view.paths'));
+            $paths = Arr::first(config('view.paths'));
             /**
              * @var  $module ModuleInterface
              */
@@ -282,37 +268,37 @@ class MenuTableController extends Controller implements TableControllerInterface
 
             switch ($request->input('view', 'table')) {
                 case 'table':
-            /**
-             * @var $items Collection
-             */
-            $items = $root->descendantsAndSelf()->withoutSelf()
-                ->where(function ($query) use ($request, &$scope) {
-                    $this->setFilters($query);
-                })
-                //->$scope()
-                ->orderBy($request->input('order_by', 'lft'), $request->input('direction', 'asc'))
-                ->paginate($request->input('limit', self::PAGE_SIZE));
+                    /**
+                     * @var $items Collection
+                     */
+                    $items = $root->descendantsAndSelf()->withoutSelf()
+                        ->where(function($query) use ($request, &$scope) {
+                            $this->setFilters($query);
+                        })
+                        //->$scope()
+                        ->orderBy($request->input('order_by', 'lft'), $request->input('direction', 'asc'))
+                        ->paginate($request->input('limit', self::PAGE_SIZE));
 
-            $items->each(function (Menu $item) use (&$result) {
+                    $items->each(function(Menu $item) use (&$result) {
 
-                array_push($result['items'], [
-                    'id' => $item->id,
-                    'name' => $item->{Menu::NAME},
+                        array_push($result['items'], [
+                            'id' => $item->id,
+                            'name' => $item->{Menu::NAME},
                             'text' => $item->{Menu::NAME},
-                    'depth' => ($item->{Menu::DEPTH} - 1),
-                    'alias' => $item->{Menu::ALIAS},
-                    'site_id' => $item->{Menu::SITE_ID},
-                    'route' => $item->{Menu::ROUTE},
-                    'parent_id' => $item->{'parent_id'},
-                    Menu::STATE => $item->{Menu::STATE},
-                    'type' => $item->getType(),
-                    'checked' => false,
-                    'extra' => trans('app.Тип') . ': ' . $item->getExtendType(),
-                ]);
-            });
-            $this->_getCurrentPaginationInfo($request, $items, $result);
+                            'depth' => ($item->{Menu::DEPTH} - 1),
+                            'alias' => $item->{Menu::ALIAS},
+                            'site_id' => $item->{Menu::SITE_ID},
+                            'route' => $item->{Menu::ROUTE},
+                            'parent_id' => $item->{'parent_id'},
+                            Menu::STATE => $item->{Menu::STATE},
+                            'type' => $item->getType(),
+                            'checked' => false,
+                            'extra' => trans('app.Тип') . ': ' . $item->getExtendType(),
+                        ]);
+                    });
+                    $this->_getCurrentPaginationInfo($request, $items, $result);
 
-            \Event::fire(new MenuItemsAdminPrepare($result, $items));
+                    event(new MenuItemsAdminPrepare($result, $items));
                     break;
                 case 'tree':
                     /**
@@ -325,7 +311,7 @@ class MenuTableController extends Controller implements TableControllerInterface
                         $result['root'] = $root->id;
                         $result['text'] = $root->{Menu::NAME};
 
-                        $items = $root->descendantsAndSelf()->where(function ($query) use ($request, &$scope) {
+                        $items = $root->descendantsAndSelf()->where(function($query) use ($request, &$scope) {
                             $this->_getMenuFilter($query, $request, $scope, Menu::class);
                         });//->$scope();
                         /**
@@ -367,7 +353,6 @@ class MenuTableController extends Controller implements TableControllerInterface
     }
 
 
-
     /**
      * Сортировка дерева
      *
@@ -378,17 +363,36 @@ class MenuTableController extends Controller implements TableControllerInterface
     {
         return $this->modelTreeReorder($request, \FastDog\Menu\Models\Menu::class, __METHOD__);
     }
+
     /**
      * Обновление параметров материалов
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
     public function postMenuUpdate(Request $request)
     {
         $result = ['success' => true, 'items' => []];
-        $this->updatedModel($request->all(), Menu::class);
 
+        try {
+            $this->updatedModel($request->all(), Menu::class);
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'code' => $e->getCode()
+            ], __METHOD__);
+        }
         return $this->json($result, __METHOD__);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function items(Request $request): JsonResponse
+    {
+        // TODO: Implement items() method.
     }
 }
