@@ -1,7 +1,7 @@
 <?php
 
 use FastDog\Core\Models\DomainManager;
-use FastDog\Menu\Menu\Menu;
+use FastDog\Menu\Models\Menu;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 
@@ -161,7 +161,7 @@ Route::group([
 /**
  * Получаем активные пункты меню для определения параметров доступных маршрутов
  */
-$items = \FastDog\Menu\Menu\Menu::where(function(Builder $query) {
+$items = \FastDog\Menu\Models\Menu::where(function(Builder $query) {
     $query->where(Menu::SITE_ID, DomainManager::getSiteId());
     $query->where(Menu::STATE, Menu::STATE_PUBLISHED);
     $query->where(function(Builder $query) {
@@ -169,7 +169,7 @@ $items = \FastDog\Menu\Menu\Menu::where(function(Builder $query) {
             //->whereRaw(\DB::raw('data->"$.type" != \'catalog_index\''))
             ->whereRaw(\DB::raw('data->"$.type" != \'catalog_categories\''));
     });
-})->get()->each(function(\FastDog\Menu\Menu\Entity\Menu $item) {
+})->get()->each(function(\FastDog\Menu\Models\Menu $item) {
     $data = $item->getData();
     if (isset($item->route) && (!in_array($item->route, ['#', 'menu']))) {
         if (isset($data['data']->route_data)) {
@@ -181,7 +181,7 @@ $items = \FastDog\Menu\Menu\Menu::where(function(Builder $query) {
             if (!in_array($item->route, ['catalog'])) {
             }
             \Route::get($item->route, function(Request $request) use ($item, $data) {
-                return Menu::buildRoute($item, $data, $request);
+                return FastDog\Menu\Menu::buildRoute($item, $data, $request);
             });
 
         }
