@@ -1,12 +1,11 @@
 <?php
 namespace FastDog\Menu\Models;
 
-
-
 use Baum\Node;
 use FastDog\Core\Media\Interfaces\MediaInterface;
 use FastDog\Core\Media\Traits\MediaTraits;
 use FastDog\Core\Models\DomainManager;
+use FastDog\Core\Properties\BaseProperties;
 use FastDog\Core\Properties\Interfases\PropertiesInterface;
 use FastDog\Core\Properties\Traits\PropertiesTrait;
 use FastDog\Core\Store;
@@ -14,6 +13,7 @@ use FastDog\Core\Table\Interfaces\TableModelInterface;
 use FastDog\Core\Traits\StateTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 
 /**
  * Меню навигации

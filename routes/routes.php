@@ -2,7 +2,7 @@
 
 use FastDog\Core\Models\DomainManager;
 use FastDog\Menu\Models\Menu;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
 Route::group([
@@ -158,35 +158,37 @@ Route::group([
     }
 );
 
-/**
- * Получаем активные пункты меню для определения параметров доступных маршрутов
- */
-$items = \FastDog\Menu\Models\Menu::where(function(Builder $query) {
-    $query->where(Menu::SITE_ID, DomainManager::getSiteId());
-    $query->where(Menu::STATE, Menu::STATE_PUBLISHED);
-    $query->where(function(Builder $query) {
-        $query
-            //->whereRaw(\DB::raw('data->"$.type" != \'catalog_index\''))
-            ->whereRaw(\DB::raw('data->"$.type" != \'catalog_categories\''));
-    });
-})->get()->each(function(\FastDog\Menu\Models\Menu $item) {
-    $data = $item->getData();
-    if (isset($item->route) && (!in_array($item->route, ['#', 'menu']))) {
-        if (isset($data['data']->route_data)) {
-            /**
-             * Зарезервированные в других модулях маршруты:
-             *
-             * catalog - главная каталога
-             */
-            if (!in_array($item->route, ['catalog'])) {
-            }
-            \Route::get($item->route, function(Request $request) use ($item, $data) {
-                return FastDog\Menu\Menu::buildRoute($item, $data, $request);
-            });
+if (!\App::runningInConsole()) {
+    /**
+     * Получаем активные пункты меню для определения параметров доступных маршрутов
+     */
+    \FastDog\Menu\Models\Menu::where(function(Builder $query) {
+        $query->where(Menu::SITE_ID, DomainManager::getSiteId());
+        $query->where(Menu::STATE, Menu::STATE_PUBLISHED);
+        $query->where(function(Builder $query) {
+            $query
+                //->whereRaw(\DB::raw('data->"$.type" != \'catalog_index\''))
+                ->whereRaw(\DB::raw('data->"$.type" != \'catalog_categories\''));
+        });
+    })->get()->each(function(\FastDog\Menu\Models\Menu $item) {
+        $data = $item->getData();
+        if (isset($item->route) && (!in_array($item->route, ['#', 'menu']))) {
+            if (isset($data['data']->route_data)) {
+                /**
+                 * Зарезервированные в других модулях маршруты:
+                 *
+                 * catalog - главная каталога
+                 */
+                if (!in_array($item->route, ['catalog'])) {
+                }
+                \Route::get($item->route, function(Request $request) use ($item, $data) {
+                    return FastDog\Menu\Menu::buildRoute($item, $data, $request);
+                });
 
+            }
         }
-    }
-});
+    });
+}
 
 
 /**
