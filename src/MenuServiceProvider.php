@@ -52,6 +52,7 @@ class MenuServiceProvider extends LaravelServiceProvider
     public function register(): void
     {
         $this->app->register(MenuEventServiceProvider::class);
+        $this->app->register(AuthServiceProvider::class);
     }
 
     /**

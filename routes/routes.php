@@ -17,40 +17,40 @@ Route::group([
         /*
          * Таблица
          */
-        $ctrl = '\FastDog\Menu\Menu\Controllers\Admin\MenuTableController';
+        $ctrl = '\FastDog\Menu\Controllers\Admin\MenuTableController';
 
         // Список корневых элементов меню
-        \Route::post('/public/menu/roots', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/roots', array_replace_recursive($baseParameters, [
             'uses' => $ctrl . '@postMenuRoots',
 
         ]));
 
         // Просмотр списка дочерних пунктов меню в виде списка
-        \Route::post('/public/menu/list', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/list', array_replace_recursive($baseParameters, [
             'uses' => $ctrl . '@postMenuList',
 
         ]));
 
         // Сортировка меню
-        \Route::post('/public/menu/reorder', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/reorder', array_replace_recursive($baseParameters, [
             'uses' => $ctrl . '@reorder',
 
         ]));
 //
         //Изменение сортировки меню
-        \Route::post('/public/menu/reorder-tree', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/reorder-tree', array_replace_recursive($baseParameters, [
             'uses' => $ctrl . '@postMenuReorderTree',
 
         ]));
 
         // Обновление параметров меню из общего списка
-        \Route::post('/public/menu/list/self-update', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/list/self-update', array_replace_recursive($baseParameters, [
             'uses' => $ctrl . '@postMenuUpdate',
 
         ]));
 
         // Обновление параметров меню из общего списка
-        \Route::post('/public/menu/roots/self-update', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/roots/self-update', array_replace_recursive($baseParameters, [
             'uses' => $ctrl . '@postMenuUpdate',
 
         ]));
@@ -60,24 +60,24 @@ Route::group([
          */
         $ctrl = '\FastDog\Menu\Menu\Controllers\Admin\MenuFormController';
 
-        \Route::get('/public/menu/{id}', array_replace_recursive($baseParameters, [
+        \Route::get('/menu/{id}', array_replace_recursive($baseParameters, [
             'uses' => $ctrl . '@getEditItem',
 
         ]))->where('id', '[0-9]+');
 
-        \Route::get('/public/menu-root/{parent_id}', array_replace_recursive($baseParameters, [
+        \Route::get('/menu-root/{parent_id}', array_replace_recursive($baseParameters, [
             'uses' => $ctrl . '@getEditItem',
 
         ]))->where('id', '[0-9]+');
 
         // Обновление парамтеров позиции
-        \Route::post('/public/menu', array_replace_recursive($baseParameters, [
+        \Route::post('/menu', array_replace_recursive($baseParameters, [
             'uses' => $ctrl . '@postMenu',
 
         ]));
 
         // Добавление позиции
-        \Route::post('/public/menu-create', array_replace_recursive($baseParameters, [
+        \Route::post('/menu-create', array_replace_recursive($baseParameters, [
             'uses' => $ctrl . '@postMenu',
 
         ]));
@@ -88,12 +88,12 @@ Route::group([
         $ctrl = '\FastDog\Menu\Menu\Controllers\Admin\ApiController';
 
         // Страница информации\настроек параметров\доступа
-        \Route::get('/public/menu/admin-info', array_replace_recursive($baseParameters, [
+        \Route::get('/menu/admin-info', array_replace_recursive($baseParameters, [
             'uses' => $ctrl . '@getInfo',
         ]));
 
         // Очистка кэша
-        \Route::post('/public/menu/clear-cache', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/clear-cache', array_replace_recursive($baseParameters, [
             'uses' => $ctrl . '@postClearCache',
 
         ]));
