@@ -24,7 +24,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        \FastDog\Menu\Menu::class => MenuPolicy::class
+        \FastDog\Menu\Models\Menu::class => MenuPolicy::class
     ];
 
     /**
