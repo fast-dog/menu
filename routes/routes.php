@@ -10,10 +10,7 @@ Route::group([
     'middleware' => ['web', FastDog\Admin\Http\Middleware\Admin::class],
 ],
     function() {
-        $baseParameters = [
-            'middleware' => ['acl'],
-            'is' => DomainManager::getSiteId() . '::admin',
-        ];
+        $baseParameters = [];
         /*
          * Таблица
          */

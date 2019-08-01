@@ -1,4 +1,5 @@
 <?php
+
 namespace FastDog\Menu\Models;
 
 use Baum\Node;
@@ -9,10 +10,14 @@ use FastDog\Core\Properties\BaseProperties;
 use FastDog\Core\Properties\Interfases\PropertiesInterface;
 use FastDog\Core\Properties\Traits\PropertiesTrait;
 use FastDog\Core\Store;
+use FastDog\Core\Table\Filters\BaseFilter;
+use FastDog\Core\Table\Filters\Operator\BaseOperator;
 use FastDog\Core\Table\Interfaces\TableModelInterface;
 use FastDog\Core\Traits\StateTrait;
+use FastDog\Menu\Events\MenuItemAdminPrepare;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 /**
@@ -162,7 +167,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
     protected $priority = [
         0 => 1.0, 1 => 0.9, 2 => 0.8, 3 => 0.7, 4 => 0.6,
         5 => 0.5, 6 => 0.4, 7 => 0.3, 8 => 0.2, 9 => 0.1,
-        ];
+    ];
 
     /**
      * Поле объединения дерева в режиме мультисайта
@@ -220,7 +225,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
         if (null === $data) {
             $menuItemsCollection = $storeManager->getCollection(\FastDog\Menu\Menu::class);
             if (null === $menuItemsCollection) {
-                $storeManager->pushCollection(\FastDog\Menu\Menu::class, self::where(function (Builder $query) {
+                $storeManager->pushCollection(\FastDog\Menu\Menu::class, self::where(function(Builder $query) {
 
                 })->get());
                 $menuItemsCollection = $storeManager->getCollection(\FastDog\Menu\Menu::class);
@@ -369,7 +374,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
         }
         if (isset($this->{self::DATA}->type)) {
             if (isset($this->{self::DATA}->{'module_data'}->{'menu'})) {
-                $result = array_first(array_filter($this->{self::DATA}->{'module_data'}->{'menu'}, function ($item) {
+                $result = array_first(array_filter($this->{self::DATA}->{'module_data'}->{'menu'}, function($item) {
                     return $item->id == $this->{self::DATA}->type;
                 }));
             }
@@ -389,14 +394,14 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
     public static function getRoots()
     {
         $result = [];
-        $roots = Menu::where(function (Builder $query) {
+        $roots = Menu::where(function(Builder $query) {
             $query->where('lft', 1);
             if (DomainManager::checkIsDefault() === false) {
                 $query->where(Menu::SITE_ID, DomainManager::getSiteId());
             }
 
         })->get()
-            ->each(function (Menu $root) use (&$result) {
+            ->each(function(Menu $root) use (&$result) {
 
                 array_push($result, [
                     'id' => $root->id,
@@ -404,7 +409,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
                 ]);
 
                 $root->descendants()->limitDepth(1)->get()
-                    ->each(function (Menu $item) use (&$result) {
+                    ->each(function(Menu $item) use (&$result) {
                         $data = $item->getData();
                         $allow = true;
                         if ($data[Menu::SITE_ID] !== DomainManager::getSiteId()) {
@@ -650,7 +655,7 @@ SQL
      */
     public static function findMenuItem($segment)
     {
-        return self::where(function (Builder $query) use ($segment) {
+        return self::where(function(Builder $query) use ($segment) {
             $query->where(self::ROUTE, 'LIKE', '%' . $segment . '%');
         })->withTrashed()->get();
 
@@ -797,7 +802,6 @@ SQL
     }
 
 
-
     /**
      * Возвращает описание доступных полей для вывода в колонки...
      *
@@ -810,14 +814,14 @@ SQL
     {
         return [
             [
-                'name' => trans('app.Название'),
+                'name' => trans('menu::forms.general.fields.name'),
                 'key' => self::NAME,
                 'domain' => true,
                 'link' => 'category_item',
                 'extra' => true,
             ],
             [
-                'name' => trans('app.Дата'),
+                'name' => trans('menu::forms.general.fields.created_at'),
                 'key' => 'created_at',
                 'width' => 150,
                 'link' => null,
@@ -842,18 +846,17 @@ SQL
             [
                 [
                     BaseFilter::NAME => self::NAME,
-                    BaseFilter::PLACEHOLDER => trans('app.Название'),
+                    BaseFilter::PLACEHOLDER => trans('menu::forms.general.fields.name'),
                     BaseFilter::TYPE => BaseFilter::TYPE_TEXT,
-                    BaseFilter::DISPLAY => false,
+                    BaseFilter::DISPLAY => true,
                     BaseFilter::OPERATOR => (new BaseOperator('LIKE', 'LIKE'))->getOperator(),
-
                 ],
                 BaseFilter::getLogicAnd(),
                 [
                     BaseFilter::TYPE => BaseFilter::TYPE_TEXT,
                     BaseFilter::NAME => self::ALIAS,
                     BaseFilter::DISPLAY => true,
-                    BaseFilter::PLACEHOLDER => trans('app.Псевдоним'),
+                    BaseFilter::PLACEHOLDER => trans('menu::forms.general.fields.alias'),
                     BaseFilter::OPERATOR => (new BaseOperator())->getOperator(),
                     BaseFilter::VALIDATE => 'required|min:5',
                 ],
@@ -862,7 +865,7 @@ SQL
                     BaseFilter::TYPE => BaseFilter::TYPE_DATETIME,
                     BaseFilter::NAME => self::CREATED_AT,
                     BaseFilter::DISPLAY => true,
-                    BaseFilter::PLACEHOLDER => trans('app.Дата создания'),
+                    BaseFilter::PLACEHOLDER => trans('menu::forms.general.fields.created_at'),
                     BaseFilter::OPERATOR => (new BaseOperator('BETWEEN', 'BETWEEN'))->getOperator(
                         [['id' => 'BETWEEN', 'name' => 'BETWEEN']]
                     ),
@@ -889,119 +892,119 @@ SQL
     {
         $result = [
             [
-                BaseProperties::NAME => 'Адрес перенаправления',
+                BaseProperties::NAME => trans('menu::properties.menu.redirect_to'),
                 BaseProperties::ALIAS => 'REDIRECT_TO',
                 BaseProperties::VALUE => '',
                 BaseProperties::SORT => 100,
                 BaseProperties::TYPE => BaseProperties::TYPE_STRING,
                 BaseProperties::DATA => json_encode([
-                    'description' => 'В случае если пункт меню не доступен по совокупности условий на этот адрес будет выполнен редирект.',
+                    'description' => trans('menu::properties.menu.redirect_to_description'),
                 ]),
             ],
             [
-                BaseProperties::NAME => 'Код перенаправления',
+                BaseProperties::NAME => trans('menu::properties.menu.redirect_code'),
                 BaseProperties::ALIAS => 'REDIRECT_CODE',
                 BaseProperties::VALUE => '303',
                 BaseProperties::SORT => 200,
                 BaseProperties::TYPE => BaseProperties::TYPE_STRING,
                 BaseProperties::DATA => json_encode([
-                    'description' => 'HTTP код при выполнение редиректа',
+                    'description' => trans('menu::properties.menu.redirect_code_description'),
                 ]),
             ],
             [
-                BaseProperties::NAME => 'Исключить из навигации',
+                BaseProperties::NAME => trans('menu::properties.menu.exclude_breadcrumbs'),
                 BaseProperties::ALIAS => 'EXCLUDE_BREADCRUMBS',
                 BaseProperties::VALUE => 'N',
                 BaseProperties::SORT => 300,
                 BaseProperties::TYPE => BaseProperties::TYPE_SELECT,
                 BaseProperties::DATA => json_encode([
-                    'description' => 'Исключить пункт меню из цепочки навигации - "хлебные крошки"',
+                    'description' => trans('menu::properties.menu.exclude_breadcrumbs_description'),
                     'values' => [
-                        ['id' => null, 'alias' => 'Y', 'name' => 'Разрешить',],
-                        ['id' => null, 'alias' => 'N', 'name' => 'Запретить',],
+                        ['id' => null, 'alias' => 'Y', 'name' => trans('menu::properties.values.Y'),],
+                        ['id' => null, 'alias' => 'N', 'name' => trans('menu::properties.values.N'),],
                     ],
                 ]),
             ],
             [
-                BaseProperties::NAME => 'Обработка изображений',
+                BaseProperties::NAME => trans('menu::properties.menu.image_resize'),
                 BaseProperties::ALIAS => 'IMAGES_RESIZE',
                 BaseProperties::VALUE => 'Y',
                 BaseProperties::SORT => 400,
                 BaseProperties::TYPE => BaseProperties::TYPE_SELECT,
                 BaseProperties::DATA => json_encode([
-                    'description' => 'Параметр определяющий возможность автоматического изменения размеров изображений в списке Материалов, может быть использован в других модулях.',
+                    'description' => trans('menu::properties.menu.image_resize_description'),
                     'values' => [
-                        ['id' => null, 'alias' => 'Y', 'name' => 'Разрешить',],
-                        ['id' => null, 'alias' => 'N', 'name' => 'Запретить',],
+                        ['id' => null, 'alias' => 'Y', 'name' => trans('menu::properties.values.Y'),],
+                        ['id' => null, 'alias' => 'N', 'name' => trans('menu::properties.values.N'),],
                     ],
                 ]),
             ],
             [
-                BaseProperties::NAME => 'Ширина изображеня',
+                BaseProperties::NAME => trans('menu::properties.menu.image_width'),
                 BaseProperties::ALIAS => 'IMAGES_WIDTH',
                 BaseProperties::VALUE => '250',
                 BaseProperties::SORT => 500,
                 BaseProperties::TYPE => BaseProperties::TYPE_STRING,
                 BaseProperties::DATA => json_encode([
-                    'description' => 'Размер по <strong>горизонтали</strong> к которму будут приведены изображения в случае автоматической обработки',
+                    'description' => trans('menu::properties.menu.image_width_description'),
 
                 ]),
             ],
             [
-                BaseProperties::NAME => 'Высота изображеня',
+                BaseProperties::NAME => trans('menu::properties.menu.image_height'),
                 BaseProperties::ALIAS => 'IMAGES_HEIGHT',
                 BaseProperties::VALUE => '180',
                 BaseProperties::SORT => 600,
                 BaseProperties::TYPE => BaseProperties::TYPE_STRING,
                 BaseProperties::DATA => json_encode([
-                    'description' => 'Размер по <strong>вертикали</strong> к которму будут приведены изображения в случае автоматической обработки',
+                    'description' => trans('menu::properties.menu.image_height_description'),
                 ]),
             ],
             [
-                BaseProperties::NAME => 'Иконка',
-                BaseProperties::ALIAS => 'ICON_CSS',
+                BaseProperties::NAME => trans('menu::properties.menu.icon_css'),
+                BaseProperties::ALIAS => 'ICON',
                 BaseProperties::VALUE => '',
                 BaseProperties::SORT => 700,
                 BaseProperties::TYPE => BaseProperties::TYPE_FILE,
                 BaseProperties::DATA => json_encode([
-                    'description' => 'Изображение используемое для оформления пункта меню',
+                    'description' => trans('menu::properties.menu.icon_css_description'),
                 ]),
             ],
             [
-                BaseProperties::NAME => 'Альтернативный шаблон',
+                BaseProperties::NAME => trans('menu::properties.menu.template'),
                 BaseProperties::ALIAS => 'TEMPLATE',
                 BaseProperties::VALUE => '',
                 BaseProperties::SORT => 800,
                 BaseProperties::TYPE => BaseProperties::TYPE_STRING,
                 BaseProperties::DATA => json_encode([
-                    'description' => 'Альтернативный шаблон для отображения содержимого пункта меню',
+                    'description' => trans('menu::properties.menu.template_description'),
                 ]),
             ],
             [
-                BaseProperties::NAME => 'Доступ без авторизации',
+                BaseProperties::NAME => trans('menu::properties.menu.show_guest'),
                 BaseProperties::ALIAS => 'SHOW_GUEST',
                 BaseProperties::VALUE => 'Y',
                 BaseProperties::SORT => 900,
                 BaseProperties::TYPE => BaseProperties::TYPE_SELECT,
                 BaseProperties::DATA => json_encode([
-                    'description' => 'Доступ <strong>для всех, <span style="color:red">не авторизованных</span></strong> пользователей.',
+                    'description' => trans('menu::properties.menu.show_guest_description'),
                     'values' => [
-                        ['id' => null, 'alias' => 'Y', 'name' => 'Разрешить',],
-                        ['id' => null, 'alias' => 'N', 'name' => 'Запретить',],
+                        ['id' => null, 'alias' => 'Y', 'name' => trans('menu::properties.values.Y'),],
+                        ['id' => null, 'alias' => 'N', 'name' => trans('menu::properties.values.N'),],
                     ],
                 ]),
             ],
             [
-                BaseProperties::NAME => 'Доступ с авторизацией',
+                BaseProperties::NAME => trans('menu::properties.menu.show_user'),
                 BaseProperties::ALIAS => 'SHOW_USER',
                 BaseProperties::VALUE => 'Y',
                 BaseProperties::SORT => 900,
                 BaseProperties::TYPE => BaseProperties::TYPE_SELECT,
                 BaseProperties::DATA => json_encode([
-                    'description' => 'Доступ <strong>только для авторизованных</strong> пользователей.',
+                    'description' => trans('menu::properties.menu.show_user_description'),
                     'values' => [
-                        ['id' => null, 'alias' => 'Y', 'name' => 'Разрешить',],
-                        ['id' => null, 'alias' => 'N', 'name' => 'Запретить',],
+                        ['id' => null, 'alias' => 'Y', 'name' => trans('menu::properties.values.Y'),],
+                        ['id' => null, 'alias' => 'N', 'name' => trans('menu::properties.values.N'),],
                     ],
                 ]),
             ],
@@ -1031,7 +1034,7 @@ SQL
     public function sanitizeRoute($route)
     {
         if (strpos($route, 'http') === false) {
-            $route = '/' . array_first(explode('#', $route));
+            $route = '/' . Arr::first(explode('#', $route));
             $route = str_replace(['//'], '/', $route);
         }
 
@@ -1048,7 +1051,7 @@ SQL
     {
         $count = 0;
         $route = explode('/', $route);
-        array_filter($route, function ($item) use (&$count) {
+        array_filter($route, function($item) use (&$count) {
             if (!empty($item)) {
                 $count++;
             };
@@ -1149,15 +1152,6 @@ SQL
         return $routeList;
     }
 
-    /**
-     * Возвращает ключ доступа к ACL
-     * @param string $type
-     * @return string
-     */
-    public function getAccessKey($type = 'guest'): string
-    {
-        return strtolower(\FastDog\Menu\Menu::class) . '::' . DomainManager::getSiteId() . '::' . $type;
-    }
 
     /**
      * @return array
