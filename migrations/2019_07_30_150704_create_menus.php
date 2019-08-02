@@ -15,7 +15,7 @@ class CreateMenus extends Migration
     public function up()
     {
         if (!Schema::hasTable('menus')) {
-            Schema::create('menus', function (Blueprint $table) {
+            Schema::create('menus', function(Blueprint $table) {
                 $table->increments('id');
                 $table->integer('parent_id')->default(0);
                 $table->integer('lft');
@@ -93,6 +93,22 @@ BEGIN
   END IF;
 END
  ");
+
+            FastDog\Menu\Models\Menu::create([
+                'name' => 'root',
+                'alias' => 'root',
+                'lft' => 1,
+                'rgt' => 2,
+                'site_id' => '000'
+            ]);
+            FastDog\Menu\Models\Menu::create([
+                'name' => 'root',
+                'alias' => 'root',
+                'lft' => 1,
+                'rgt' => 2,
+                'site_id' => '001'
+            ]);
+
         }
     }
 

@@ -55,7 +55,7 @@ Route::group([
         /*
          * Форма
          */
-        $ctrl = '\FastDog\Menu\Menu\Controllers\Admin\MenuFormController';
+        $ctrl = '\FastDog\Menu\Http\Controllers\Admin\MenuFormController';
 
         \Route::get('/menu/{id}', array_replace_recursive($baseParameters, [
             'uses' => $ctrl . '@getEditItem',

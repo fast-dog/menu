@@ -1,6 +1,6 @@
 <?php
 
-namespace FastDog\Menu\Controllers\Admin;
+namespace FastDog\Menu\Http\Controllers\Admin;
 
 
 use FastDog\Core\Form\Interfaces\FormControllerInterface;
@@ -21,7 +21,7 @@ use Illuminate\Http\Request;
 /**
  * Меню навигации - Форма
  *
- * @package FastDog\Menu\Controllers\Admin
+ * @package FastDog\Menu\Http\Controllers\Admin
  * @version 0.2.1
  * @author Андрей Мартынов <d.g.dev482@gmail.com>
  */

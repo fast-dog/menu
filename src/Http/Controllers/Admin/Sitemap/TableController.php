@@ -1,6 +1,6 @@
 <?php
 
-namespace FastDog\Menu\Controllers\Admin\Sitemap;
+namespace FastDog\Menu\Http\Controllers\Admin\Sitemap;
 
 
 use FastDog\Core\Http\Controllers\Controller;
@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Artisan;
 /**
  * Карта сайта, табличное представление данных
  *
- * @package FastDog\Menu\Controllers\Admin\Sitemap
+ * @package FastDog\Menu\Http\Controllers\Admin\Sitemap
  * @version 0.2.1
  * @author Андрей Мартынов <d.g.dev482@gmail.com>
  */

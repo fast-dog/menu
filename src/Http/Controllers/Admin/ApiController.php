@@ -1,27 +1,19 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: dg
- * Date: 18.04.2018
- * Time: 8:57
- */
 
-namespace FastDog\Menu\Controllers\Admin;
+namespace FastDog\Menu\Http\Controllers\Admin;
 
 
-use App\Core\Acl\Permission;
-use App\Core\Acl\Role;
-use App\Core\Module\ModuleManager;
-use App\Core\Table\Traits\TableTrait;
-use App\Http\Controllers\Controller;
-use FastDog\Menu\Config\Config;
-use FastDog\Menu\Config\Entity\DomainManager;
-use FastDog\Menu\Config\Entity\Translate;
+use FastDog\Config\Models\Translate;
+use FastDog\Core\Http\Controllers\Controller;
+use FastDog\Core\Models\DomainManager;
+use FastDog\Core\Models\ModuleManager;
+use FastDog\Core\Table\Traits\TableTrait;
 use FastDog\Menu\Models\MenuRouterCheckResult;
 use FastDog\Menu\Models\MenuStatistic;
 use FastDog\Menu\Menu;
 use Carbon\Carbon;
 use Curl\Curl;
+use FastDog\User\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,7 +22,7 @@ use Illuminate\Support\Collection;
 /**
  * Дополнительный функционал
  *
- * @package FastDog\Menu\Controllers\Admin
+ * @package FastDog\Menu\Http\Controllers\Admin
  * @version 0.2.1
  * @author Андрей Мартынов <d.g.dev482@gmail.com>
  */
@@ -52,10 +44,7 @@ class ApiController extends Controller
     {
         parent::__construct();
 
-        $this->accessKey = strtolower(\FastDog\Menu\Menu::class) . '::'
-            . DomainManager::getSiteId() . '::' . 'guest';
-
-        $this->page_title = trans('app.Меню навигации');
+        $this->page_title = trans('menu::interface.Меню навигации');
     }
 
     /**
@@ -66,18 +55,19 @@ class ApiController extends Controller
      */
     public function getInfo(Request $request)
     {
-        $result = ['success' => true,
+        $result = [
+            'success' => true,
             'items' => [],
         ];
-        $this->breadcrumbs->push(['url' => false, 'name' => trans('app.Информация')]);
+        $this->breadcrumbs->push(['url' => false, 'name' => trans('menu::interface.Информация')]);
         /**
          * @var $moduleManager ModuleManager
          */
         $moduleManager = \App::make('ModuleManager');
         /**
-         * @var $module Menu
+         * @var $module array
          */
-        $module = $moduleManager->getInstance('FastDog\Menu\Menu');
+        $module = $moduleManager->getInstance('menu');
 
         /**
          * Параметры модуля
@@ -89,10 +79,6 @@ class ApiController extends Controller
          */
         array_push($result['items'], Menu::getStatistic());
 
-        /**
-         * Список доступа ACL
-         */
-        array_push($result['items'], Config::getAcl(DomainManager::getSiteId(), strtolower(Menu::class)));
 
         return $this->json($result, __METHOD__);
     }
@@ -126,38 +112,6 @@ class ApiController extends Controller
         return $this->json($result);
     }
 
-    /**
-     * Изменение доступа к модулю
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function postAccess(Request $request)
-    {
-        $result = ['success' => false];
-
-        $role = Role::where([
-            Role::NAME => $request->input('role'),
-        ])->first();
-        if ($role) {
-            $permission = Permission::where(function (Builder $query) use ($request, $role) {
-                $query->where(Permission::NAME, $request->input('permission') . '::' . $role->slug);
-            })->first();
-
-            if ($permission) {
-                if (isset($permission->slug[$request->input('accessName')])) {
-                    $permission_slug = $permission->slug;
-                    $permission_slug[$request->input('accessName')] = ($request->input('accessValue') == 'Y') ? true : false;
-                    Permission::where('id', $permission->id)->update([
-                        'slug' => \GuzzleHttp\json_encode($permission_slug),
-                    ]);
-                }
-            }
-            $result['acl'] = Config::getAcl(DomainManager::getSiteId(), strtolower(Menu::class));
-        }
-
-        return $this->json($result, __METHOD__);
-    }
 
     /**
      * Страница диагностики
@@ -178,7 +132,7 @@ class ApiController extends Controller
         ];
         $this->breadcrumbs->push(['url' => false, 'name' => trans('app.Диагностика')]);
 
-        $items = MenuStatistic::where(function (Builder $query) use ($request) {
+        $items = MenuStatistic::where(function(Builder $query) use ($request) {
 
             $period = $request->input('period', 'total');
             switch ($period) {
@@ -256,21 +210,21 @@ SQL
             'access' => $this->getAccess(),
             'cols' => [
                 [
-                    'name' => trans('app.Название'),
+                    'name' => trans('menu::forms.general.fields.name'),
                     'key' => Menu::NAME,
                     'domain' => true,
                     'extra' => true,
                     'link' => 'menu_item',
                 ],
                 [
-                    'name' => trans('app.Дата проверки'),
+                    'name' => trans('menu::interface.checked_at'),
                     'key' => 'checked_at',
                     'width' => 150,
                     'link' => null,
                     'class' => 'text-center',
                 ],
                 [
-                    'name' => trans('app.Результат'),
+                    'name' => trans('menu::interface.result'),
                     'key' => 'result',
                     'width' => 150,
                     'link' => null,
@@ -285,7 +239,8 @@ SQL
                 ],
             ],
         ];
-        $this->breadcrumbs->push(['url' => false, 'name' => trans('app.Диагностика')]);
+        $this->breadcrumbs->push(['url' => false, 'name' => trans('menu::interface.Диагностика')]);
+
         /**
          * @var $root Menu
          */
@@ -454,7 +409,7 @@ SQL
         foreach ($request->input('translate', []) as $item) {
             $tmp[$item['id']] = $item['value'];
         }
-        $items->each(function ($item) use ($tmp, &$updated) {
+        $items->each(function($item) use ($tmp, &$updated) {
             if (isset($tmp[$item->id]) && $tmp[$item->id] !== $item->{Translate::VALUE}) {
                 Translate::where('id', $item->id)->update([
                     Translate::VALUE => $tmp[$item->id],
