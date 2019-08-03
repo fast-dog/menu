@@ -247,11 +247,10 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
                     ->where('id', '!=', $this->id)->all()) : [];
 
             $parentsIds = [];
-            foreach ($parents as $parent) {
-                if ($parent->{Menu::DEPTH} >= 1) {
-                    array_push($parentsIds, $parent->id);
-                }
-            }
+            $parents->each(function($parent) use (&$parentsIds) {
+                array_push($parentsIds, $parent->id);
+            });
+
             if (is_string($this->{self::DATA})) {
                 $this->{self::DATA} = json_decode($this->{self::DATA});
             }

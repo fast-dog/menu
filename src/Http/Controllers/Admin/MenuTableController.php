@@ -133,7 +133,7 @@ class MenuTableController extends Controller implements TableControllerInterface
         if (!$root) {
             Menu::create([
                 'parent_id' => 0,
-                Menu::NAME => trans('menu::menu.Корневой элемент') . ' #' . DomainManager::getSiteId(),
+                Menu::NAME => trans('menu::menu.Корневой элемент'),
                 Menu::ROUTE => '#',
                 Menu::SITE_ID => DomainManager::getSiteId(),
                 'lft' => 1,
