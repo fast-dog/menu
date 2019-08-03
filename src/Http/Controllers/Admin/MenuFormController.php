@@ -12,7 +12,7 @@ use FastDog\Core\Models\ModuleManager;
 use FastDog\Menu\Events\CatalogCreateProperty;
 use FastDog\Menu\Events\MenuItemAfterSave;
 use FastDog\Menu\Events\MenuItemBeforeSave;
-use FastDog\Menu\Menu;
+use FastDog\Menu\Models\Menu;
 use FastDog\Menu\Request\AddMenu;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
