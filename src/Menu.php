@@ -312,6 +312,9 @@ XML;
                     '000',
                 ];
             },
+            'route' => function(Request $request, $item) {
+                return $this->getMenuRoute($request, $item);
+            }
         ];
     }
 

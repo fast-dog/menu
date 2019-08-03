@@ -17,6 +17,7 @@ use FastDog\Menu\Request\AddMenu;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 /**
  * Меню навигации - Форма
@@ -93,7 +94,7 @@ class MenuFormController extends Controller implements FormControllerInterface
 
 
         if ($data[Menu::ALIAS] == '' && $data['id'] == 0) {
-            $data[Menu::ALIAS] = \Slug::make($data[Menu::NAME]);
+            $data[Menu::ALIAS] = Str::slug($data[Menu::NAME]);
         }
 
         $root = Menu::where([
@@ -115,9 +116,7 @@ class MenuFormController extends Controller implements FormControllerInterface
             Menu::DATA => json_encode($data[Menu::DATA]),
         ];
 
-        /**
-         * Попытка добавить пункт меню в чужой\общий сайт
-         */
+        // Попытка добавить пункт меню в чужой\общий сайт
         if ($root->{Menu::SITE_ID} !== DomainManager::getSiteId()) {
             if (DomainManager::checkIsDefault() === false) {
                 return $this->json([
@@ -135,15 +134,12 @@ class MenuFormController extends Controller implements FormControllerInterface
             $item = Menu::create($updateData);
             $data['id'] = $item->id;
         }
-        /**
-         * @var $item Menu
-         */
+
+        /** @var $item Menu */
         $item = Menu::find($data['id']);
         $itemData = $item->getData(false);
-        /**
-         * Если изменен родительский элемент, перемещаем
-         */
 
+        // Если изменен родительский элемент, перемещаем
         if (isset($data['menu_id']['id']) && $data['menu_id']['id'] <> $itemData['menu_id']) {
             if ($root) {
                 if (isset($data['parent_id']) && $data['parent_id'] > 0) {
@@ -179,66 +175,34 @@ class MenuFormController extends Controller implements FormControllerInterface
         if ($item) {
             $item = Menu::find($item->id);
             $itemData = $item->getData(false);
-            /**
-             * Обновляем параметры пункта меню
-             */
+
+            // Обновляем параметры пункта меню
             $_data = [];
 
-            /**
-             * @var $moduleManager ModuleManager
-             */
-            $moduleManager = \App::make('ModuleManager');
-            $modules = $moduleManager->getModules();
-
-            /**
-             * @var $module ModuleInterface
-             */
-            foreach ($modules as $module) {
-                /**
-                 * Получаем ссылку согласно настройкам модуля
-                 */
-                $types = $module->getMenuType();
-
-                if ($types !== null) {
-                    foreach ($types as $type) {
-                        $type = (object)$type;
-                        if (isset($type->id)) {
-                            if ($type->id === $request->input('type.id')) {
-                                $_data['module_data'] = $module->getConfig();
-
-                                $_data['module_data']->menu = [$type];//<-- Для отображения типа меню в таблице администрирования
-
-                                /**
-                                 * Получаем коректный набор значений для инициализации маршрута,
-                                 * массив должен иметь вид:
-                                 * [
-                                 *      'instance'=> Controller::class,
-                                 *      'route'=> 'path/to/data/route[?.html]'
-                                 * ]
-                                 */
-
-                                $routeData = $module->getMenuRoute($request, $item);
-
+            \App::make(ModuleManager::class)->getModules()
+                ->each(function($data) use (&$_data, $request, $item) {
+                    collect($data['module_type'])->each(function($type) use ($data, &$_data, $request, $item) {
+                        if ($data['id'] . '::' . $type['id'] === $request->input('type.id')) {
+                            if ($data['route'] instanceof \Closure) {
+                                $routeData = $data['route']($request, $item);
                                 if ($routeData['route'] || (isset($routeData['alias']) && $routeData['alias'])) {
                                     $updateData[Menu::ROUTE] = $routeData['route'];
                                     $_data['route_data'] = $routeData;
                                 }
                             }
-                        } else {
-                            dd($type);
                         }
-                    }
-                }
-            }
+                    });
+                });
+
+
             $_data['meta_title'] = $request->input('data.meta_title');
             $_data['meta_description'] = $request->input('data.meta_description');
             $_data['meta_keywords'] = $request->input('data.meta_keywords');
             $_data['meta_robots'] = $request->input('data.meta_robots');
 
             $updateData['data'] = json_encode($_data);
-            /**
-             * Изменен код доступа к пункту меню
-             */
+
+            // Изменен код доступа к пункту меню
             if ($updateData[Menu::SITE_ID] <> $itemData[Menu::SITE_ID]) {
                 if (DomainManager::checkIsDefault()) {
                     $ids = [];
@@ -259,30 +223,19 @@ class MenuFormController extends Controller implements FormControllerInterface
 
             event(new MenuItemAfterSave($result, $item));
 
-            if ($request->has('set_properties')) {
-                /**
-                 * Обновление свойств фильтра
-                 *
-                 * @var $properties object
-                 */
-                $properties = $request->input('set_properties', []);
-
-                /**
-                 * Обновление своиств фильтра пункта меню
-                 */
-                event(new CatalogCreateProperty($properties, $item));
-            }
-            /**
-             * Обновление шаблона
-             */
-            if ($request->has('template_raw')) {
-                $template = $request->input('template.id');
-                if (view()->exists($template)) {
-                    $path = view($template)->getPath();
-                    // \File::put($path, $request->input('template_raw'));
-                }
-            }
-
+//            if ($request->has('set_properties')) { fix me: move to MenuItemAfterSaveListeners Catalog cmp
+//                /**
+//                 * Обновление свойств фильтра
+//                 *
+//                 * @var $properties object
+//                 */
+//                $properties = $request->input('set_properties', []);
+//
+//                /**
+//                 * Обновление своиств фильтра пункта меню
+//                 */
+//                event(new CatalogCreateProperty($properties, $item));
+//            }
         }
 
         return $this->json($result, __METHOD__);
