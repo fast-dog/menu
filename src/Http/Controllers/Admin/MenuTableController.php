@@ -84,20 +84,10 @@ class MenuTableController extends Controller implements TableControllerInterface
                 'domain' => true,
                 'extra' => true,
                 'link' => 'menu_item',
-            ],
-            [
-                'name' => '',
-                'key' => 'children_publish',
-                'width' => 50,
-                'link' => 'menu_items_child',
-                'class' => 'text-center',
-            ],
-            [
-                'name' => '',
-                'key' => 'children_count',
-                'width' => 50,
-                'link' => null,
-                'class' => 'text-center',
+                'action' => [
+                    'edit' => true,
+                    'delete' => true,
+                ]
             ],
             [
                 'name' => trans('menu::forms.general.fields.created_at'),
@@ -159,7 +149,7 @@ class MenuTableController extends Controller implements TableControllerInterface
                 if ($root->{Menu::DEPTH} == 0 && $root->{Menu::SITE_ID} == DomainManager::getSiteId()) {
                     $result['set_root_id'] = $root->id;
                 }
-                $root->descendants()->limitDepth($limitDepth)
+                $root->descendantsAndSelf()->withoutSelf()->limitDepth($limitDepth)
                     ->where(function($query) use ($request, &$scope) {
                         $this->setFilters($query);
                     })
@@ -173,14 +163,6 @@ class MenuTableController extends Controller implements TableControllerInterface
                             if ($prepareName && $repeatLevel > 0) {
                                 $data[Menu::NAME] = str_repeat('┊ ', $repeatLevel) . $data[Menu::NAME];
                             }
-                            $data['children_count'] = '<span class="badge badge-danger">';
-                            if (($data['total_children'] - $countPublish) > 0) {
-                                $data['children_count'] .= ($data['total_children'] - $countPublish);
-                            } else {
-                                $data['children_count'] .= 0;
-                            }
-                            $data['children_count'] .= '</span>';
-                            $data['children_publish'] = '<span class="badge badge-primary">' . ($countPublish) . '</span>';
 
                             $data[Menu::DEPTH] = 0;
                             $data['created_at'] = $item->created_at->format('d.m.y H:i');
