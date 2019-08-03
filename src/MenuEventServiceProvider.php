@@ -19,8 +19,8 @@ class MenuEventServiceProvider extends ServiceProvider
             'FastDog\Menu\Listeners\MenuItemAfterSave',
         ],
         'FastDog\Menu\Events\MenuItemAdminPrepare' => [
-            'App\Core\Listeners\AdminItemPrepare',// <-- Поля даты обновления и т.д.
-            'App\Core\Listeners\MetadataAdminPrepare',// <-- SEO
+            'FastDog\Core\Listeners\AdminItemPrepare',// <-- Поля даты обновления и т.д.
+            'FastDog\Core\Listeners\MetadataAdminPrepare',// <-- SEO
             'FastDog\Menu\Listeners\MenuItemAdminPrepare',
             'FastDog\Menu\Listeners\MenuItemSetEditorForm',
         ],
