@@ -13,6 +13,7 @@ use FastDog\Menu\Models\Menu as BaseMenu;
 use FastDog\Menu\Models\SiteMap;
 use FastDog\Menu\Events\MenuPrepare;
 
+use function foo\func;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -286,16 +287,17 @@ XML;
         return [
             'id' => self::MODULE_ID,
             'menu' => function() use ($paths, $templates_paths) {
-                $result = [];
+                $result = collect();
                 foreach ($this->getMenuType() as $id => $item) {
-                    array_push($result, [
-                        'id' => $id,
-                        'name' => $item,
+                    $result->push([
+                        'id' => self::MODULE_ID . '::' . $item['id'],
+                        'name' => $item['name'],
+                        'sort' => $item['sort'],
                         'templates' => (isset($templates_paths[$id])) ? $this->getTemplates($paths . $templates_paths[$id]) : [],
                         'class' => __CLASS__,
                     ]);
                 }
-
+                $result = $result->sort('sort');
                 return $result;
             },
             'templates_paths' => $templates_paths,
@@ -323,26 +325,20 @@ XML;
         /**
          * @var  $moduleManager ModuleManager
          */
-        $moduleManager = \App::make('ModuleManager');
+        $moduleManager = \App::make(ModuleManager::class);
         $modules = $moduleManager->getModules();
         /**
          * @var $module ModuleInterface
          */
         foreach ($modules as $module) {
-            $moduleType = $module->getMenuType();
-            if (is_array($moduleType) && count($moduleType) > 0) {
-                foreach ($moduleType as $item) {
-                    array_push($result, (object)$item);
-                }
-            }
-        }
+            collect($module['menu']())->each(function($data) use (&$result) {
 
-        usort($result, function ($a, $b) {
-            return $a->sort - $b->sort;
-        });
+            });
+        }
 
         return $result;
     }
+
     /**
      * Устанавливает параметры в контексте объекта
      *
