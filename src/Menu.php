@@ -297,7 +297,7 @@ XML;
                         'class' => __CLASS__,
                     ]);
                 }
-                $result = $result->sort('sort');
+                $result = $result->sortBy('sort');
                 return $result;
             },
             'templates_paths' => $templates_paths,
@@ -322,17 +322,10 @@ XML;
     public static function getTypes()
     {
         $result = [];
-        /**
-         * @var  $moduleManager ModuleManager
-         */
-        $moduleManager = \App::make(ModuleManager::class);
-        $modules = $moduleManager->getModules();
-        /**
-         * @var $module ModuleInterface
-         */
-        foreach ($modules as $module) {
-            collect($module['menu']())->each(function($data) use (&$result) {
 
+        foreach (\App::make(ModuleManager::class)->getModules() as $module) {
+            $module['menu']()->each(function($data) use (&$result) {
+                array_push($result, $data);
             });
         }
 
