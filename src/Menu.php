@@ -270,7 +270,9 @@ XML;
      */
     public function getTemplatesPaths(): array
     {
-        return [];
+        return [
+            'menu' => '/menu/parent/*.blade.php'
+        ];
     }
 
     /**
