@@ -2,6 +2,7 @@
 
 namespace FastDog\Menu;
 
+use FastDog\Menu\Events\MenuSetFormGeneralFields;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class MenuEventServiceProvider extends ServiceProvider
@@ -32,6 +33,12 @@ class MenuEventServiceProvider extends ServiceProvider
         ],
         'FastDog\Menu\Events\CatalogCreateProperty' => [
             'FastDog\Menu\Listeners\CatalogCreateProperty',
+        ],
+        'FastDog\Menu\Events\MenuSetFormGeneralFields' => [
+            //<-- добавление полей к основной форме редактирования
+        ],
+        'FastDog\Menu\Events\MenuSetFormTabs' => [
+            //<-- добавление разделов к основной форме редактирования
         ],
     ];
 
