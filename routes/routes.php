@@ -14,7 +14,7 @@ Route::group([
         /*
          * Таблица
          */
-        $ctrl = '\FastDog\Menu\Controllers\Admin\MenuTableController';
+        $ctrl = '\FastDog\Menu\Http\Controllers\Admin\MenuTableController';
 
         // Список корневых элементов меню
         \Route::post('/menu/roots', array_replace_recursive($baseParameters, [
@@ -82,7 +82,7 @@ Route::group([
         /**
          * API
          */
-        $ctrl = '\FastDog\Menu\Menu\Controllers\Admin\ApiController';
+        $ctrl = '\FastDog\Menu\Menu\Http\Controllers\Admin\ApiController';
 
         // Страница информации\настроек параметров\доступа
         \Route::get('/menu/admin-info', array_replace_recursive($baseParameters, [
@@ -140,7 +140,7 @@ Route::group([
         /**
          * Карта сайта
          */
-        $ctrl = '\FastDog\Menu\Menu\Controllers\Admin\Sitemap\TableController';
+        $ctrl = '\FastDog\Menu\Menu\Http\Controllers\Admin\Sitemap\TableController';
 
         // Страница информации\настроек параметров\доступа
         \Route::post('/sitemap', array_replace_recursive($baseParameters, [
