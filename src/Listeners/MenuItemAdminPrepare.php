@@ -60,7 +60,7 @@ class MenuItemAdminPrepare
             GalleryItem::PARENT_TYPE => GalleryItem::TYPE_MENU,
             GalleryItem::PARENT_ID => (isset($item->id)) ? $item->id : 0,
         ];
-        $data['item']['files_module'] = ($moduleManager->hasModule('FastDog\Menu\Media\Media')) ? 'Y' : 'N';
+        $data['item']['files_module'] = ($moduleManager->hasModule('media')) ? 'Y' : 'N';
 
         if (config('app.debug')) {
             $data['_events'][] = __METHOD__;

@@ -5,6 +5,7 @@ namespace FastDog\Menu\Models;
 use Baum\Node;
 use FastDog\Core\Media\Interfaces\MediaInterface;
 use FastDog\Core\Media\Traits\MediaTraits;
+use FastDog\Core\Models\Domain;
 use FastDog\Core\Models\DomainManager;
 use FastDog\Core\Properties\BaseProperties;
 use FastDog\Core\Properties\Interfases\PropertiesInterface;
@@ -182,6 +183,15 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
     public $dates = ['deleted_at'];
 
     /**
+     * Отношение к домену\сайту
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function domain()
+    {
+        return $this->hasOne(Domain::class, Domain::CODE, self::SITE_ID);
+    }
+
+    /**
      * Отношение к результату проверки
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
@@ -262,7 +272,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
                 'type' => (isset($_data->type)) ? $_data->type : '',
                 'checked' => false,
                 'total_children' => (($this->rgt - $this->lft) - 1) / 2,
-                'menu_id' => array_first($parentsIds),
+                'menu_id' => Arr::first($parentsIds),
                 'data' => $_data,
                 'allow_modified' => true,
             ];
@@ -374,7 +384,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
         }
         if (isset($this->{self::DATA}->type)) {
             if (isset($this->{self::DATA}->{'module_data'}->{'menu'})) {
-                $result = array_first(array_filter($this->{self::DATA}->{'module_data'}->{'menu'}, function($item) {
+                $result = Arr::first(array_filter($this->{self::DATA}->{'module_data'}->{'menu'}, function($item) {
                     return $item->id == $this->{self::DATA}->type;
                 }));
             }
@@ -487,43 +497,6 @@ SQL
         return (isset($count[0]->count)) ? $count[0]->count : 0;
     }
 
-    /**
-     * Пустой элемент
-     *
-     * @return array
-     */
-    public static function getClearData()
-    {
-        return [
-            'url' => '',
-            'page_id' => 0,
-            'page_title' => '',
-            'image' => '',
-            'image_second' => '',
-            'category_id' => 0,
-            'data' => [
-                'type' => '',
-            ],
-        ];
-    }
-
-    /**
-     * Информация по модулю
-     *
-     * для отображения в списке модулей
-     * @param $data
-     * @return string
-     */
-    public function getInstanceInfo($data)
-    {
-        $result = ['Меню навигации'];
-        if (isset($data->menu_id)) {
-            $menu = Menu::find($data->menu_id);
-            array_push($result, $menu->name);
-        }
-
-        return implode(' :: ', $result);
-    }
 
 //    /**
 //     * Типы меню в проекте
@@ -573,7 +546,6 @@ SQL
 
     /**
      * Маршрут
-     *
      * @param bool $return_route
      * @return mixed
      */
@@ -594,7 +566,6 @@ SQL
 
     /**
      * Имя
-     *
      * @return mixed
      */
     public function getName()
@@ -604,7 +575,6 @@ SQL
 
     /**
      * Цепочка навигации
-     *
      * @return array
      */
     public function getPath()
@@ -613,7 +583,7 @@ SQL
         $parents = $this->ancestors()->get();
         array_push($result, [
             'id' => 0,
-            'name' => trans('public.Главная'),
+            'name' => trans('menu::public.Главная'),
             'url' => '/',
         ]);
         /**
@@ -738,35 +708,6 @@ SQL
         return $result;
     }
 
-    /**
-     * Фильтр параметров
-     *
-     * Получение параметров согласно заданному фильтру
-     *
-     * @param array $filter
-     * @param $default
-     * @return array
-     */
-    public function __getParameterByFilterData(array $filter = [], $default = null)
-    {
-        if (is_string($this->{self::DATA})) {
-            $this->{self::DATA} = json_decode($this->{self::DATA});
-        }
-        /**
-         * @var $item self
-         */
-        if (isset($this->{self::DATA}->{'properties'})) {
-            foreach ($this->{self::DATA}->{'properties'} as $items) {
-                foreach ($items as $name => $value) {
-                    if (isset($filter[$name]) && $filter[$name] == $value) {
-                        return (isset($items->{'value'})) ? $items->{'value'} : $items;
-                    }
-                }
-            }
-        }
-
-        return $default;
-    }
 
     /**
      * Ошибка перехода
@@ -1076,6 +1017,7 @@ SQL
         if (is_string($this->{self::DATA})) {
             $this->{self::DATA} = json_decode($this->{self::DATA});
         }
+        //fix me: add events
         if (isset($this->{self::DATA}->type)) {
             switch ($this->{self::DATA}->type) {
                 case 'static':
@@ -1154,19 +1096,20 @@ SQL
 
 
     /**
-     * @return array
-     */
-    public function getExtractParameterNames()
-    {
-        return ['type', 'template', 'html', 'category_id', 'url', 'route_instance',
-            'item_id', 'image', 'alias_id', 'alias_menu_id'];
-    }
-
-    /**
      * @return \Illuminate\Database\Query\Builder
      */
     public function descendants()
     {
-        return parent::descendants()->where(self::STATE, self::STATE_PUBLISHED); // TODO: Change the autogenerated stub
+        return parent::descendants()
+            ->where(self::STATE, self::STATE_PUBLISHED);
+    }
+
+    /**
+     * Идентификатор модели
+     * @return mixed
+     */
+    public function getId()
+    {
+        return $this->id;
     }
 }
