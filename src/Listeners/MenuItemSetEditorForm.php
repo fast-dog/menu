@@ -47,19 +47,6 @@ class MenuItemSetEditorForm
         $data = $event->getData();
         $item = $event->getItem();
 
-        /**
-         * Парамтеры извлекаемые из json объекта data
-         */
-        $extractParameters = $item->getExtractParameterNames();
-        if (!is_array($data['data'])) {
-            $data['data'] = (array)$data['data'];
-        }
-        foreach ($data['data'] as $name => $value) {
-            if (in_array($name, $extractParameters)) {
-                $data[$name] = $value;
-            }
-        }
-
         foreach ($data['data'] as $name => $value) {
             if (!isset($data[$name])) {
                 $data[$name] = '';
