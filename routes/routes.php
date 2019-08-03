@@ -34,22 +34,20 @@ Route::group([
 
         ]));
 //
-        //Изменение сортировки меню
-        \Route::post('/menu/reorder-tree', array_replace_recursive($baseParameters, [
-            'uses' => $ctrl . '@postMenuReorderTree',
+//        //Изменение сортировки меню
+//        \Route::post('/menu/reorder-tree', array_replace_recursive($baseParameters, [
+//            'uses' => $ctrl . '@postMenuReorderTree',
+//
+//        ]));
 
+        // Обновление параметров меню из общего списка
+        \Route::post('/menu/list/update', array_replace_recursive($baseParameters, [
+            'uses' => $ctrl . '@postMenuUpdate',
         ]));
 
         // Обновление параметров меню из общего списка
-        \Route::post('/menu/list/self-update', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/roots/update', array_replace_recursive($baseParameters, [
             'uses' => $ctrl . '@postMenuUpdate',
-
-        ]));
-
-        // Обновление параметров меню из общего списка
-        \Route::post('/menu/roots/self-update', array_replace_recursive($baseParameters, [
-            'uses' => $ctrl . '@postMenuUpdate',
-
         ]));
 
         /*
@@ -68,15 +66,13 @@ Route::group([
         ]))->where('id', '[0-9]+');
 
         // Обновление парамтеров позиции
-        \Route::post('/menu', array_replace_recursive($baseParameters, [
-            'uses' => $ctrl . '@postMenu',
-
-        ]));
+//        \Route::post('/menu', array_replace_recursive($baseParameters, [
+//            'uses' => $ctrl . '@postMenu',
+//        ]));
 
         // Добавление позиции
-        \Route::post('/menu-create', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/create', array_replace_recursive($baseParameters, [
             'uses' => $ctrl . '@postMenu',
-
         ]));
 
         /**

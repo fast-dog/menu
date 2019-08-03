@@ -320,8 +320,8 @@ class MenuItemSetEditorForm
 
 
         $result['form'] = [
-            'create_url' => 'public/create',
-            'update_url' => 'public/create',
+            'create_url' => 'menu/create',
+            'update_url' => 'menu/create',
             'tabs' => $tabs,
         ];
 
