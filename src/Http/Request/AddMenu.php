@@ -42,7 +42,8 @@ class AddMenu extends FormRequest
         return [
             'name' => 'required',
             'type' => 'required',
-            //'menu_id' => 'required',
+            'menu_id' => 'required',
+            'site_id' => 'required',
         ];
     }
 
@@ -54,7 +55,8 @@ class AddMenu extends FormRequest
         return [
             'name.required' => trans('menu::requests.add_menu.name.required'),
             'type.required' => trans('menu::requests.add_menu.type.required'),
-            //'menu_id.required' => trans('app.Поле "Меню" обязательно для заполнения.'),
+            'menu_id.required' => trans('menu::requests.add_menu.menu_id.required'),
+            'site_id.required' => trans('menu::requests.add_menu.site_id.required'),
         ];
     }
 
@@ -71,11 +73,6 @@ class AddMenu extends FormRequest
                 if ($input['depth'] > 1 && $input['menu_id'] == null) {
                     $validator->errors()->add('menu_id', trans('menu::requests.add_menu.menu.required'));
                 }
-//                if ($input['depth'] == 1) {
-//                    $this->merge([
-//                        'menu_id' => $input['parent_id'],
-//                    ]);
-//                }
             }
         });
 

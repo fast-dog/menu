@@ -137,15 +137,13 @@ class MenuTableController extends Controller implements TableControllerInterface
 
         $root = Menu::where(function(Builder $query) {
             $query->where('lft', 1);
-
             $query->where(Menu::SITE_ID, DomainManager::getSiteId());
-
         })->first();
 
         if (!$root) {
             Menu::create([
                 'parent_id' => 0,
-                Menu::NAME => trans('menu::interface.Корневой элемент') . '#' . DomainManager::getSiteId(),
+                Menu::NAME => trans('menu::menu.Корневой элемент') . ' #' . DomainManager::getSiteId(),
                 Menu::ROUTE => '#',
                 Menu::SITE_ID => DomainManager::getSiteId(),
                 'lft' => 1,
