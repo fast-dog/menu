@@ -100,6 +100,9 @@ class MenuItemAdminPrepare
             return $element['id'] == $data['menu_id'];
         }));
 
+        if ($parent_id = \Route::input('parent_id', null)) {
+            $data['parent_id'] = ['id' => $parent_id];
+        }
 
         $allMenu = Menu::getAll();
         if (isset($allMenu[$data['menu_id']['id']])) {

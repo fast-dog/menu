@@ -225,7 +225,7 @@ class MenuItemSetEditorForm
                         'label' => trans('menu::forms.general.fields.menu'),
                         'items' => Menu::getRoots(),
                         'css_class' => 'col-sm-12',
-                        'expression' => 'function(item){ return ((!item.id) && (!item.depth || item.depth >= 1); }',
+                        'expression' => 'function(item){ return ((item.id !== null ) && (!item.depth || item.depth >= 1)); }',
                     ],
                     [
                         'id' => 'parent_id',

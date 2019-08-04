@@ -759,8 +759,12 @@ SQL
                 'name' => trans('menu::forms.general.fields.name'),
                 'key' => self::NAME,
                 'domain' => true,
-                'link' => 'category_item',
+                'link' => 'menu_item',
                 'extra' => true,
+                'action' => [
+                    'edit' => true,
+                    'delete' => true,
+                ]
             ],
             [
                 'name' => trans('menu::forms.general.fields.created_at'),

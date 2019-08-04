@@ -48,15 +48,15 @@ class MenuFormController extends Controller implements FormControllerInterface
         $this->breadcrumbs->push(['url' => '/menu/index', 'name' => trans('menu::interface.Управление')]);
         $parent_id = \Route::input('parent_id', null);
         $parent = null;
-        /**
-         * Отключаем кэширование в методе Menu::getData(cached)
-         */
+
+        //Отключаем кэширование в методе Menu::getData(cached)
         config([
             'cache.enabled' => false,
         ]);
         $result = $this->getItemData($request);
 
         $result['item'] = array_first($result['items']);
+
 
         if ($parent_id) {
             $parent = Menu::find($parent_id);
@@ -67,9 +67,12 @@ class MenuFormController extends Controller implements FormControllerInterface
         if ($parent) {
             $this->breadcrumbs->push(['url' => '/menu/list/' . $parent->id, 'name' => $parent->{Menu::NAME}]);
         }
-        if ($this->item) {
-            $this->breadcrumbs->push(['url' => false, 'name' => $this->item->{Menu::NAME}]);
-        }
+
+        $this->breadcrumbs->push([
+            'url' => false,
+            'name' => ($this->item->id > 0) ? $this->item->{Menu::NAME} : trans('menu::forms.general.new_item')
+        ]);
+
 
         //$result['items'] = Menu::getAll();
 
@@ -129,7 +132,16 @@ class MenuFormController extends Controller implements FormControllerInterface
         }
 
         if (!isset($data['id']) || $data['id'] == 0) {
+            /** @var Menu $item */
             $item = Menu::create($updateData);
+
+            if ($data['parent_id']) {
+                $parent = Menu::find($data['parent_id']);
+                if ($parent) {
+                    $item->makeLastChildOf($parent);
+                }
+            }
+
             $data['id'] = $item->id;
         }
 
@@ -221,6 +233,7 @@ class MenuFormController extends Controller implements FormControllerInterface
 
             event(new MenuItemAfterSave($result, $item));
 
+            $result['items'][] = $item->getData(false);
 //            if ($request->has('set_properties')) { fix me: move to MenuItemAfterSaveListeners Catalog cmp
 //                /**
 //                 * Обновление свойств фильтра

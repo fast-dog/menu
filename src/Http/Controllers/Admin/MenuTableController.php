@@ -199,9 +199,8 @@ class MenuTableController extends Controller implements TableControllerInterface
             'url' => '/menu/index',
             'name' => trans('menu::interface.Список доступных меню')
         ]);
-        /**
-         * @var $root Menu
-         */
+
+        /** @var $root Menu */
         $root = Menu::find($request->input('filter.root', \Route::input('root_id', 0)));
 
         $scope = 'default';
@@ -211,91 +210,39 @@ class MenuTableController extends Controller implements TableControllerInterface
                 'url' => false,
                 'name' => trans('menu::interface.Меню') . ': ' . $root->{Menu::NAME}
             ]);
-            $result['item'] = [
-                'id' => $root->id,
-            ];
+            $result['item'] = ['id' => $root->id,];
 
-            switch ($request->input('view', 'table')) {
-                case 'table':
-                    /**
-                     * @var $items Collection
-                     */
-                    $items = $root->descendantsAndSelf()->withoutSelf()
-                        ->where(function($query) use ($request, &$scope) {
-                            $this->setFilters($query);
-                        })
-                        //->$scope()
-                        ->orderBy($request->input('order_by', 'lft'), $request->input('direction', 'asc'))
-                        ->paginate($request->input('limit', self::PAGE_SIZE));
 
-                    $items->each(function(Menu $item) use (&$result) {
+            /** @var $items Collection */
+            $items = $root->descendantsAndSelf()->withoutSelf()
+                ->where(function(Builder $query) use ($request, &$scope) {
+                    $this->setFilters($query);
+                })
+                //->$scope()
+                ->orderBy($request->input('order_by', 'lft'), $request->input('direction', 'asc'))
+                ->paginate($request->input('limit', self::PAGE_SIZE));
 
-                        array_push($result['items'], [
-                            'id' => $item->id,
-                            'name' => $item->{Menu::NAME},
-                            'text' => $item->{Menu::NAME},
-                            'depth' => ($item->{Menu::DEPTH} - 1),
-                            'alias' => $item->{Menu::ALIAS},
-                            'site_id' => $item->{Menu::SITE_ID},
-                            'route' => $item->{Menu::ROUTE},
-                            'parent_id' => $item->{'parent_id'},
-                            Menu::STATE => $item->{Menu::STATE},
-                            'type' => $item->getType(),
-                            'checked' => false,
-                            'extra' => trans('app.Тип') . ': ' . $item->getExtendType(),
-                        ]);
-                    });
-                    $this->_getCurrentPaginationInfo($request, $items, $result);
+            $items->each(function(Menu $item) use (&$result) {
+                array_push($result['items'], [
+                    'id' => $item->id,
+                    'name' => $item->{Menu::NAME},
+                    'text' => $item->{Menu::NAME},
+                    'depth' => ($item->{Menu::DEPTH} - 1),
+                    'alias' => $item->{Menu::ALIAS},
+                    'site_id' => $item->{Menu::SITE_ID},
+                    'route' => $item->{Menu::ROUTE},
+                    'parent_id' => $item->{'parent_id'},
+                    Menu::STATE => $item->{Menu::STATE},
+                    'type' => $item->getType(),
+                    'checked' => false,
+                    'extra' => trans('app.Тип') . ': ' . $item->getExtendType(),
+                ]);
+            });
 
-                    event(new MenuItemsAdminPrepare($result, $items));
-                    break;
-                case 'tree':
-                    /**
-                     * @var $root Menu
-                     */
-                    $root = Menu::find($request->input('filter.root'));
-                    $scope = 'active';
+            $this->_getCurrentPaginationInfo($request, $items, $result);
 
-                    if ($root) {
-                        $result['root'] = $root->id;
-                        $result['text'] = $root->{Menu::NAME};
+            event(new MenuItemsAdminPrepare($result, $items));
 
-                        $items = $root->descendantsAndSelf()->where(function($query) use ($request, &$scope) {
-                            $this->_getMenuFilter($query, $request, $scope, Menu::class);
-                        });//->$scope();
-                        /**
-                         * @var $items Collection
-                         */
-                        $items = $items->get()->toHierarchy();
-
-                        /**
-                         * @var $item Menu
-                         */
-                        foreach ($items as $item) {
-                            $_prefix = DomainManager::getDomainSuffix($item->{Menu::SITE_ID});
-                            $prefix = '<i class="fa fa-globe" data-toggle="tooltip" data-placement="top" title="#' .
-                                $_prefix['text']['id'] . ' ' . $_prefix['text']['name'] . '" style="color:#' . $_prefix['color'] . '"></i>';
-                            if (DomainManager::checkIsDefault() === false && $item->{Menu::SITE_ID} !== '000') {
-                                $prefix = '';
-                            }
-
-                            $data = [
-                                'id' => $item->id,
-                                'text' => $prefix . '&nbsp;' . $item->{Menu::NAME} .
-                                    ' [' . $item->id . ']',
-                                'depth' => ($item->{Menu::DEPTH} - 1),
-                                'parent_id' => $item->parent_id,
-                                'state' => ['opened' => true],
-                                'type' => $item->getType(),
-                                'children' => [],
-                                Menu::SITE_ID => $item->{Menu::SITE_ID},
-                            ];
-                            $this->getChildren($item, $data);
-                            array_push($result['items'], $data);
-                        }
-                    }
-                    break;
-            }
         }
 
         return $this->json($result, __METHOD__);
@@ -307,6 +254,7 @@ class MenuTableController extends Controller implements TableControllerInterface
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
+     * @deprecated
      */
     public function postMenuReorderTree(Request $request)
     {
