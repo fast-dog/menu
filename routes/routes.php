@@ -10,128 +10,111 @@ Route::group([
     'middleware' => ['web', FastDog\Admin\Http\Middleware\Admin::class],
 ],
     function() {
-        $baseParameters = [];
-        /*
-         * Таблица
-         */
+
+        // Таблица
         $ctrl = '\FastDog\Menu\Http\Controllers\Admin\MenuTableController';
 
         // Список корневых элементов меню
-        \Route::post('/menu/roots', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/roots', [
             'uses' => $ctrl . '@postMenuRoots',
-
-        ]));
+        ]);
 
         // Просмотр списка дочерних пунктов меню в виде списка
-        \Route::post('/menu/list', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/list/{root_id}', [
             'uses' => $ctrl . '@postMenuList',
-
-        ]));
+        ])->where('root_id', '[0-9]+');
 
         // Сортировка меню
-        \Route::post('/menu/reorder', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/reorder', [
             'uses' => $ctrl . '@reorder',
-
-        ]));
+        ]);
 //
 //        //Изменение сортировки меню
-//        \Route::post('/menu/reorder-tree', array_replace_recursive($baseParameters, [
+//        \Route::post('/menu/reorder-tree',  [
 //            'uses' => $ctrl . '@postMenuReorderTree',
 //
-//        ]));
+//        ]);
 
         // Обновление параметров меню из общего списка
-        \Route::post('/menu/list/update', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/list/update', [
             'uses' => $ctrl . '@postMenuUpdate',
-        ]));
+        ]);
 
         // Обновление параметров меню из общего списка
-        \Route::post('/menu/roots/update', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/roots/update', [
             'uses' => $ctrl . '@postMenuUpdate',
-        ]));
+        ]);
 
-        /*
-         * Форма
-         */
+        //Форма
         $ctrl = '\FastDog\Menu\Http\Controllers\Admin\MenuFormController';
 
-        \Route::get('/menu/{id}', array_replace_recursive($baseParameters, [
+        \Route::get('/menu/{id}', [
+            'uses' => $ctrl . '@getEditItem',
+        ])->where('id', '[0-9]+');
+
+        \Route::get('/menu-root/{parent_id}', [
             'uses' => $ctrl . '@getEditItem',
 
-        ]))->where('id', '[0-9]+');
-
-        \Route::get('/menu-root/{parent_id}', array_replace_recursive($baseParameters, [
-            'uses' => $ctrl . '@getEditItem',
-
-        ]))->where('id', '[0-9]+');
+        ])->where('id', '[0-9]+');
 
         // Обновление парамтеров позиции
-//        \Route::post('/menu', array_replace_recursive($baseParameters, [
+//        \Route::post('/menu',  [
 //            'uses' => $ctrl . '@postMenu',
-//        ]));
+//        ]);
 
         // Добавление позиции
-        \Route::post('/menu/create', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/create', [
             'uses' => $ctrl . '@postMenu',
-        ]));
+        ]);
 
-        /**
-         * API
-         */
+        // API
         $ctrl = '\FastDog\Menu\Menu\Http\Controllers\Admin\ApiController';
 
         // Страница информации\настроек параметров\доступа
-        \Route::get('/menu/admin-info', array_replace_recursive($baseParameters, [
+        \Route::get('/menu/admin-info', [
             'uses' => $ctrl . '@getInfo',
-        ]));
+        ]);
 
         // Очистка кэша
-        \Route::post('/menu/clear-cache', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/clear-cache', [
             'uses' => $ctrl . '@postClearCache',
-
-        ]));
+        ]);
 
         // Изменение доступа к модулю
-        \Route::post('/menu/access', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/access', [
             'uses' => $ctrl . '@postAccess',
-
-        ]));
+        ]);
 
         // Статистика переходов
-        \Route::get('/menu/diagnostic', array_replace_recursive($baseParameters, [
+        \Route::get('/menu/diagnostic', [
             'uses' => $ctrl . '@getDiagnostic',
-
-        ]));
+        ]);
 
         // Проверка роутера - таблица результатов
-        \Route::post('/menu/check-route', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/check-route', [
             'uses' => $ctrl . '@postCheckRoute',
-
-        ]));
+        ]);
 
         // Проверка роутера - выполнение пошаговой проверки
-        \Route::get('/menu/check-route', array_replace_recursive($baseParameters, [
+        \Route::get('/menu/check-route', [
             'uses' => $ctrl . '@getCheckRoute',
-
-        ]));
+        ]);
 
         // Сохранение локализации шаблона
-        \Route::post('/menu/api/translate', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/api/translate', [
             'uses' => $ctrl . '@postMenuTranslate',
-
-        ]));
+        ]);
 
 //        // Сохранение локализации шаблона
-//        \Route::post('/menu/api/translate', array_replace_recursive($baseParameters, [
+//        \Route::post('/menu/api/translate',  [
 //            'uses' => $ctrl . '@postMenuReloadTranslate',
 //
-//        ]));
+//        ]);
 
         // Сохранение HTML шаблона
-        \Route::post('/menu/api/template', array_replace_recursive($baseParameters, [
+        \Route::post('/menu/api/template', [
             'uses' => $ctrl . '@postMenuTemplate',
-
-        ]));
+        ]);
 
         /**
          * Карта сайта
@@ -139,15 +122,14 @@ Route::group([
         $ctrl = '\FastDog\Menu\Menu\Http\Controllers\Admin\Sitemap\TableController';
 
         // Страница информации\настроек параметров\доступа
-        \Route::post('/sitemap', array_replace_recursive($baseParameters, [
+        \Route::post('/sitemap', [
             'uses' => $ctrl . '@list',
+        ]);
 
-        ]));
         // Страница информации\настроек параметров\доступа
-        \Route::post('/sitemap/reorder', array_replace_recursive($baseParameters, [
+        \Route::post('/sitemap/reorder', [
             'uses' => $ctrl . '@reorder',
-
-        ]));
+        ]);
     }
 );
 
