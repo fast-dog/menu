@@ -84,6 +84,7 @@ class MenuTableController extends Controller implements TableControllerInterface
                 'domain' => true,
                 'extra' => true,
                 'link' => 'menu_items',
+                'edit_link' => 'menu_item',
                 'action' => [
                     'edit' => true,
                     'delete' => true,
