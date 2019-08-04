@@ -193,7 +193,7 @@ class MenuFormController extends Controller implements FormControllerInterface
                 });
 
 
-            $_data['meta_title'] = $request->input('data.meta_title');
+            $_data['meta_title'] = $request->input('data.meta_title', $data[Menu::NAME]);
             $_data['meta_description'] = $request->input('data.meta_description');
             $_data['meta_keywords'] = $request->input('data.meta_keywords');
             $_data['meta_robots'] = $request->input('data.meta_robots');
