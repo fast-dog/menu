@@ -83,7 +83,7 @@ class MenuTableController extends Controller implements TableControllerInterface
                 'key' => Menu::NAME,
                 'domain' => true,
                 'extra' => true,
-                'link' => 'menu_item',
+                'link' => 'menu_items',
                 'action' => [
                     'edit' => true,
                     'delete' => true,
@@ -122,7 +122,10 @@ class MenuTableController extends Controller implements TableControllerInterface
             'filters' => $this->getFilters(),
             'cols' => $this->getColsRoot(),
         ];
-        $this->breadcrumbs->push(['url' => false, 'name' => trans('menu::interface.Управление')]);
+        $this->breadcrumbs->push([
+            'url' => false,
+            'name' => trans('menu::interface.Список доступных меню')
+        ]);
         $scope = 'active';
 
         $root = Menu::where(function(Builder $query) {
@@ -172,25 +175,6 @@ class MenuTableController extends Controller implements TableControllerInterface
             });
 
         event(new MenuItemsAdminPrepare($result, $items));
-
-        if ($request->input('only_items', 'N') === 'Y') {
-            unset($result['breadcrumbs'], $result['page_title'], $result['access']);
-        }
-
-        /**
-         * @var $moduleManager ModuleManager
-         */
-        $moduleManager = \App::make(ModuleManager::class);
-
-        //включить в ответ возможные шаблоны модуля
-        if ($request->input('include_templates', 'N') === 'Y') {
-            $paths = Arr::first(config('view.paths'));
-            /**
-             * @var  $module ModuleInterface
-             */
-            $module = $moduleManager->getInstance(Menu::class);
-            $result['templates'] = $module->getTemplates($paths . '/modules/menu/*.blade.php');
-        }
 
         return $this->json($result, __METHOD__);
     }
