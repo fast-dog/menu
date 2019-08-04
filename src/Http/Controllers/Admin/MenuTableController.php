@@ -187,45 +187,30 @@ class MenuTableController extends Controller implements TableControllerInterface
      */
     public function postMenuList(Request $request)
     {
-        $result = ['success' => true, 'items' => [],
+        $result = [
+            'success' => true,
+            'items' => [],
             'access' => $this->getAccess(),
             'filters' => $this->getFilters(),
-            'cols' => [
-                [
-                    'name' => trans('app.Название'),
-                    'key' => Menu::NAME,
-                    'domain' => true,
-                    'extra' => true,
-                    'link' => 'menu_item',
-                ],
-                [
-                    'name' => trans('app.Дата'),
-                    'key' => 'created_at',
-                    'width' => 150,
-                    'link' => null,
-                    'extra' => false,
-                    'class' => 'text-center',
-                ],
-                [
-                    'name' => '#',
-                    'key' => 'id',
-                    'link' => null,
-                    'width' => 80,
-                    'extra' => false,
-                    'class' => 'text-center',
-                ],
-            ],
+            'cols' => $this->getCols(),
         ];
-        $this->breadcrumbs->push(['url' => '/menu/index', 'name' => trans('app.Управление меню навигации')]);
+
+        $this->breadcrumbs->push([
+            'url' => '/menu/index',
+            'name' => trans('menu::interface.Список доступных меню')
+        ]);
         /**
          * @var $root Menu
          */
-        $root = Menu::find($request->input('filter.root', 0));
+        $root = Menu::find($request->input('filter.root', \Route::input('root_id', 0)));
 
         $scope = 'default';
 
         if ($root) {
-            $this->breadcrumbs->push(['url' => false, 'name' => $root->{Menu::NAME}]);
+            $this->breadcrumbs->push([
+                'url' => false,
+                'name' => trans('menu::interface.Меню') . ': ' . $root->{Menu::NAME}
+            ]);
             $result['item'] = [
                 'id' => $root->id,
             ];

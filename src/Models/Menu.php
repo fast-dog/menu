@@ -3,6 +3,7 @@
 namespace FastDog\Menu\Models;
 
 use Baum\Node;
+use FastDog\Core\Interfaces\MenuInterface;
 use FastDog\Core\Media\Interfaces\MediaInterface;
 use FastDog\Core\Media\Traits\MediaTraits;
 use FastDog\Core\Models\Domain;
@@ -28,7 +29,7 @@ use Illuminate\Support\Collection;
  * @version 0.2.1
  * @author Андрей Мартынов <d.g.dev482@gmail.com>
  */
-class Menu extends Node implements TableModelInterface, PropertiesInterface, MediaInterface
+class Menu extends Node implements TableModelInterface, PropertiesInterface, MediaInterface, MenuInterface
 {
     use SoftDeletes, StateTrait, PropertiesTrait, MediaTraits;
 
@@ -240,16 +241,17 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
                 })->get());
                 $menuItemsCollection = $storeManager->getCollection(\FastDog\Menu\Menu::class);
             }
-            //ancestors
-            $parents = $this->id > 0 ?
-                collect($menuItemsCollection->where($this->getLeftColumnName(), '<=', $this->getLeft())
-                    ->where($this->getRightColumnName(), '>=', $this->getRight())
-                    ->where('id', '!=', $this->id)->all()) : [];
 
             $parentsIds = [];
-            $parents->each(function($parent) use (&$parentsIds) {
-                array_push($parentsIds, $parent->id);
-            });
+            //ancestors
+            if ($this->id > 0) {
+                collect($menuItemsCollection->where($this->getLeftColumnName(), '<=', $this->getLeft())
+                    ->where($this->getRightColumnName(), '>=', $this->getRight())
+                    ->where('id', '!=', $this->id)->all())
+                    ->each(function($parent) use (&$parentsIds) {
+                        array_push($parentsIds, $parent->id);
+                    });
+            }
 
             if (is_string($this->{self::DATA})) {
                 $this->{self::DATA} = json_decode($this->{self::DATA});
@@ -300,7 +302,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
      *
      * @return array
      */
-    public function getMetadata()
+    public function getMetadata(): array
     {
         $result = [];
         $data = $this->getData();
@@ -355,7 +357,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
      *
      * @return string
      */
-    public function getType()
+    public function getType(): string
     {
         if ($this->{self::DEPTH} == 1) {
             return self::TYPE_MENU;
@@ -535,7 +537,7 @@ SQL
      * @param bool $url
      * @return \Illuminate\Contracts\Routing\UrlGenerator|string
      */
-    public function getUrl($url = true)
+    public function getUrl($url = true): string
     {
         $route = $this->getRoute();
         if ($route) {
@@ -548,7 +550,7 @@ SQL
      * @param bool $return_route
      * @return mixed
      */
-    public function getRoute($return_route = false)
+    public function getRoute($return_route = false): string
     {
         $data = $this->getData();
 
@@ -567,7 +569,7 @@ SQL
      * Имя
      * @return mixed
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->{self::NAME};
     }
@@ -576,7 +578,7 @@ SQL
      * Цепочка навигации
      * @return array
      */
-    public function getPath()
+    public function getPath(): array
     {
         $result = [];
         $parents = $this->ancestors()->get();

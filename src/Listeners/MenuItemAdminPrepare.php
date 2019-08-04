@@ -87,7 +87,7 @@ class MenuItemAdminPrepare
 
         // Тип
         $data['data']->type = Arr::first(array_filter(Menu::getTypes(), function($element) use ($data) {
-            return $element['id'] == $data['type']['id'];
+            return (isset($data['type']['id'])) && $element['id'] == $data['type']['id'];
         }));
 
         $data['type'] = $data['data']->type;
