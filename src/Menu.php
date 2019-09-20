@@ -562,17 +562,33 @@ XML;
 
         $result = [
             'icon' => 'fa-table',
-            'name' => trans('menu::interface.Меню'),
+            'name' => trans('menu::interface.Сайт'),
             'route' => '/menu',
             'children' => [],
         ];
 
         array_push($result['children'], [
             'icon' => 'fa-table',
-            'name' => trans('menu::interface.Управление'),
+            'name' => trans('menu::interface.Меню'),
             'route' => '/menu/index',
             'new' => '/menu/item/0'
         ]);
+
+        array_push($result['children'], [
+            'icon' => 'fa-file',
+            'name' => trans('menu::interface.Страницы'),
+            'route' => '/menu/page',
+            'new' => '/menu/page/0'
+        ]);
+
+        array_push($result['children'], [
+            'icon' => 'fa-file-o',
+            'name' => trans('menu::interface.Материалы'),
+            'route' => '/menu/content',
+            'new' => '/menu/content/0'
+        ]);
+
+
         array_push($result['children'], [
             'icon' => 'fa-power-off',
             'name' => trans('menu::interface.Диагностика'),
