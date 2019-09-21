@@ -42,9 +42,11 @@ class MenuItemsAdminPrepare
          */
         $data = $event->getData();
         $items = $event->getItem();
-        $items = $items->toHierarchy();
 
-        if ($this->request->input('new', 1) == 1) {
+        if ($this->request->input('new', 1) == 1 && $items) {
+
+            $items = $items->toHierarchy();
+
             $data['items'] = [];
             $items->each(function($item) use (&$data) {
                 array_push($data['items'], [
@@ -84,7 +86,7 @@ class MenuItemsAdminPrepare
     {
         $result = [];
         if ($item->children) {
-            $item->children->each(function(\FastDog\Menu\Models\Menu $child) {
+            $item->children->each(function(\FastDog\Menu\Models\Menu $child) use (&$result) {
                 array_push($result, [
                     'id' => $child->id,
                     'name' => $child->{Menu::NAME},

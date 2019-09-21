@@ -9,6 +9,7 @@ use FastDog\Core\Models\DomainManager;
 use FastDog\Core\Table\Interfaces\TableControllerInterface;
 use FastDog\Core\Table\Traits\TableTrait;
 use FastDog\Menu\Events\MenuItemsAdminPrepare;
+use FastDog\Menu\Events\MenuResources;
 use FastDog\Menu\Models\Menu;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -297,5 +298,25 @@ class MenuTableController extends Controller implements TableControllerInterface
     public function items(Request $request): JsonResponse
     {
         // TODO: Implement items() method.
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function postMenuLoad(Request $request): JsonResponse
+    {
+        $result = [
+            'success' => true,
+            'roots' => [],
+            'resource' => []
+        ];
+
+        $roots = $this->postMenuRoots($request)->getOriginalContent();
+        $result['roots'] = ($roots['success']) ? $roots['items'] : [];
+
+        event(new MenuResources($result));
+
+        return $this->json($result, __METHOD__);
     }
 }

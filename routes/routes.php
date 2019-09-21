@@ -15,6 +15,11 @@ Route::group([
         $ctrl = '\FastDog\Menu\Http\Controllers\Admin\MenuTableController';
 
         // Список корневых элементов меню
+        \Route::post('/menu/load', [
+            'uses' => $ctrl . '@postMenuLoad',
+        ]);
+
+        // Список корневых элементов меню
         \Route::post('/menu/roots', [
             'uses' => $ctrl . '@postMenuRoots',
         ]);
@@ -28,12 +33,7 @@ Route::group([
         \Route::post('/menu/reorder', [
             'uses' => $ctrl . '@reorder',
         ]);
-//
-//        //Изменение сортировки меню
-//        \Route::post('/menu/reorder-tree',  [
-//            'uses' => $ctrl . '@postMenuReorderTree',
-//
-//        ]);
+
 
         // Обновление параметров меню из общего списка
         \Route::post('/menu/list/update', [
