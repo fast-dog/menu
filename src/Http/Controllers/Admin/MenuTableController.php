@@ -3,19 +3,16 @@
 namespace FastDog\Menu\Http\Controllers\Admin;
 
 
+use Baum\Extensions\Eloquent\Model;
 use FastDog\Core\Http\Controllers\Controller;
-use FastDog\Core\Interfaces\ModuleInterface;
 use FastDog\Core\Models\DomainManager;
-use FastDog\Core\Models\ModuleManager;
 use FastDog\Core\Table\Interfaces\TableControllerInterface;
 use FastDog\Core\Table\Traits\TableTrait;
-use FastDog\Menu\Models\Menu;
 use FastDog\Menu\Events\MenuItemsAdminPrepare;
-use Baum\Extensions\Eloquent\Model;
+use FastDog\Menu\Models\Menu;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 /**
@@ -201,9 +198,16 @@ class MenuTableController extends Controller implements TableControllerInterface
             'name' => trans('menu::interface.Список доступных меню')
         ]);
 
+
         /** @var $root Menu */
         $root = Menu::find($request->input('filter.root', \Route::input('root_id', 0)));
 
+        if (\Route::input('root_id', 0) == 0 && !$root) {
+            $root = Menu::where([
+                Menu::SITE_ID => DomainManager::getSiteId(),
+                'lft' => 1
+            ])->first();
+        }
         $scope = 'default';
 
         if ($root) {
@@ -222,6 +226,7 @@ class MenuTableController extends Controller implements TableControllerInterface
                 //->$scope()
                 ->orderBy($request->input('order_by', 'lft'), $request->input('direction', 'asc'))
                 ->paginate($request->input('limit', self::PAGE_SIZE));
+
 
             $items->each(function(Menu $item) use (&$result) {
                 array_push($result['items'], [
