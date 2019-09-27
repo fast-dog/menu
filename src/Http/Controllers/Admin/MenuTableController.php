@@ -257,18 +257,6 @@ class MenuTableController extends Controller implements TableControllerInterface
 
 
     /**
-     * Сортировка дерева
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     * @deprecated
-     */
-    public function postMenuReorderTree(Request $request)
-    {
-        return $this->modelTreeReorder($request, \FastDog\Menu\Models\Menu::class, __METHOD__);
-    }
-
-    /**
      * Обновление параметров материалов
      *
      * @param Request $request
@@ -319,4 +307,14 @@ class MenuTableController extends Controller implements TableControllerInterface
 
         return $this->json($result, __METHOD__);
     }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function reorder(Request $request): JsonResponse
+    {
+        return $this->reorderTree($request);
+    }
+
 }
