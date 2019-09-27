@@ -273,7 +273,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
                 'type' => (isset($_data->type)) ? $_data->type : '',
                 'checked' => false,
                 'total_children' => (($this->rgt - $this->lft) - 1) / 2,
-                'menu_id' => Arr::first($parentsIds),
+                'menu_id' => $this->parent->id,//Arr::first($parentsIds),
                 'data' => $_data,
                 'allow_modified' => true,
             ];
@@ -411,30 +411,29 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
                 $query->where(Menu::SITE_ID, DomainManager::getSiteId());
             }
 
-        })->get()
-            ->each(function(Menu $root) use (&$result) {
+        })->get()->each(function(Menu $root) use (&$result) {
 
-                array_push($result, [
-                    'id' => $root->id,
-                    self::NAME => $root->{self::NAME} . ' (#' . $root->{self::SITE_ID} . ')',
-                ]);
+            array_push($result, [
+                'id' => $root->id,
+                self::NAME => $root->{self::NAME} . ' (#' . $root->{self::SITE_ID} . ')',
+            ]);
 
-                $root->descendants()->limitDepth(1)->get()
-                    ->each(function(Menu $item) use (&$result) {
-                        $data = $item->getData();
-                        $allow = true;
-                        if ($data[Menu::SITE_ID] !== DomainManager::getSiteId()) {
-                            $allow = DomainManager::checkIsDefault();
-                        }
-                        if ($allow) {
-                            $data[self::NAME] = str_repeat('┊  ', $data[self::DEPTH]) . ' ' . $data[self::NAME];
-                            array_push($result, [
-                                'id' => $data['id'],
-                                self::NAME => $data[self::NAME],
-                            ]);
-                        }
-                    });
-            });
+            $root->descendantsAndSelf()->withoutSelf()->limitDepth(1)->get()
+                ->each(function(Menu $item) use (&$result) {
+                    $data = $item->getData();
+                    $allow = true;
+                    if ($data[Menu::SITE_ID] !== DomainManager::getSiteId()) {
+                        $allow = DomainManager::checkIsDefault();
+                    }
+                    if ($allow) {
+                        $data[self::NAME] = str_repeat('┊  ', $data[self::DEPTH]) . ' ' . $data[self::NAME];
+                        array_push($result, [
+                            'id' => $data['id'],
+                            self::NAME => $data[self::NAME],
+                        ]);
+                    }
+                });
+        });
 
         return $result;
     }
@@ -458,9 +457,9 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
                 $allow = DomainManager::checkIsDefault();
             }
             if ($allow) {
-                $_roots = $root->descendants()->limitDepth(1)->get();
+                $_roots = $root->descendantsAndSelf()->withoutSelf()->limitDepth(1)->get();
                 foreach ($_roots as $root) {
-                    $items = self::find($root->id)->descendants()->get();
+                    $items = self::find($root->id)->descendantsAndSelf()->withoutSelf()->get();
                     foreach ($items as $item) {
                         $data = $item->getData();
                         if ($data[self::DEPTH] - 2 > 0) {
