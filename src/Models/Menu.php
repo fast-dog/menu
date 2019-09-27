@@ -273,7 +273,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
                 'type' => (isset($_data->type)) ? $_data->type : '',
                 'checked' => false,
                 'total_children' => (($this->rgt - $this->lft) - 1) / 2,
-                'menu_id' => $this->parent->id,//Arr::first($parentsIds),
+                'menu_id' => ($this->parent) ? $this->parent->id : 0,//Arr::first($parentsIds),
                 'data' => $_data,
                 'allow_modified' => true,
             ];
