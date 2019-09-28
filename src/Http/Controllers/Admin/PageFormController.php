@@ -5,6 +5,7 @@ namespace FastDog\Menu\Http\Controllers\Admin;
 use FastDog\Core\Form\Interfaces\FormControllerInterface;
 use FastDog\Core\Form\Traits\FormControllerTrait;
 use FastDog\Core\Http\Controllers\Controller;
+use FastDog\Menu\Events\PageAdminPrepare;
 use FastDog\Menu\Models\Page;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -48,5 +49,13 @@ class PageFormController extends Controller implements FormControllerInterface
         ]);
 
         return $this->json($result, __METHOD__);
+    }
+
+    /**
+     * @return string
+     */
+    public function getPrepareEvent(): string
+    {
+        return PageAdminPrepare::class;
     }
 }

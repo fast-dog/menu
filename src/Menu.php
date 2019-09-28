@@ -577,7 +577,7 @@ XML;
         array_push($result['children'], [
             'icon' => 'fa-file',
             'name' => trans('menu::interface.Страницы'),
-            'route' => '/menu/page',
+            'route' => '/menu/pages',
             'new' => '/menu/page/0'
         ]);
 

@@ -47,7 +47,7 @@ Route::group([
         //Форма - Страницы
         $ctrl = '\FastDog\Menu\Http\Controllers\Admin\PageFormController';
 
-        \Route::get('/menu/{id}', [
+        \Route::get('/page/{id}', [
             'uses' => $ctrl . '@getEditItem',
         ])->where('id', '[0-9]+');
 
