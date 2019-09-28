@@ -2,6 +2,7 @@
 
 namespace FastDog\Menu\Listeners;
 
+use App\Modules\Catalog\Entity\CatalogItems;
 use FastDog\Core\Models\DomainManager;
 use FastDog\Core\Models\FormFieldTypes;
 use FastDog\Menu\Events\PageAdminPrepare as PageAdminPrepareEvent;
@@ -49,32 +50,63 @@ class PageSetEditorForm
         $result = $event->getResult();
 
         $result['form'] = [
-            'create_url' => 'menu/page/create',
-            'update_url' => 'menu/page/create',
+            'create_url' => 'page/create',
+            'update_url' => 'page/create',
             'tabs' => (array)[
                 (object)[
-                    'id' => 'menu-general-tab',
-                    'name' => trans('menu::forms.general.title'),
+                    'id' => 'page-general-tab',
+                    'name' => trans('menu::forms.page.title'),
                     'active' => true,
                     'fields' => [
                         [
                             'type' => FormFieldTypes::TYPE_TEXT,
                             'name' => Menu::NAME,
-                            'label' => trans('menu::forms.general.fields.name'),
+                            'label' => trans('menu::forms.page.fields.name'),
                             'css_class' => 'col-sm-6',
                             'form_group' => false,
                         ],
                         [
                             'type' => FormFieldTypes::TYPE_TEXT_ALIAS,
-                            'name' => Menu::ALIAS,
-                            'label' => trans('menu::forms.general.fields.alias'),
+                            'name' => Page::ALIAS,
+                            'label' => trans('menu::forms.page.fields.alias'),
+                        ],
+                        [
+                            'type' =>  FormFieldTypes::TYPE_TABS,
+                            'tabs' => [
+                                [
+                                    'id' => 'page-introtext-tab',
+                                    'name' => trans('menu::forms.page.fields.introtext'),
+                                    'active' => true,
+                                    'fields' => [
+                                        [
+                                            'id' => Page::INTROTEXT,
+                                            'type' => FormFieldTypes::TYPE_HTML_EDITOR,
+                                            'name' => Page::INTROTEXT,
+                                            'label' => '',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'id' => 'page-fulltext-tab',
+                                    'name' => trans('menu::forms.page.fields.fulltext'),
+                                    'active' => false,
+                                    'fields' => [
+                                        [
+                                            'id' => Page::FULLTEXT,
+                                            'type' => FormFieldTypes::TYPE_HTML_EDITOR,
+                                            'name' => Page::FULLTEXT,
+                                            'label' => '',
+                                        ],
+                                    ],
+                                ],
+                            ],
                         ],
                     ],
                     'side' => [
                         [
                             'id' => 'access',
                             'type' => FormFieldTypes::TYPE_ACCESS_LIST,
-                            'name' => Menu::SITE_ID, 'label' => trans('menu::forms.general.fields.access'),
+                            'name' => Menu::SITE_ID, 'label' => trans('menu::forms.page.fields.access'),
                             'items' => DomainManager::getAccessDomainList(),
                             'css_class' => 'col-sm-12',
                             'active' => DomainManager::checkIsDefault(),
@@ -82,7 +114,7 @@ class PageSetEditorForm
                     ],
                 ],
                 (object)[
-                    'id' => 'menu-item-media-tab',
+                    'id' => 'page-media-tab',
                     'name' => trans('menu::forms.media.title'),
                     'fields' => [
                         [
@@ -91,16 +123,7 @@ class PageSetEditorForm
                     ],
                 ],
                 (object)[
-                    'id' => 'menu-item-seo-tab',
-                    'name' => trans('menu::forms.seo.title'),
-                    'fields' => [
-                        [
-                            'type' => FormFieldTypes::TYPE_COMPONENT_SEO,
-                        ],
-                    ],
-                ],
-                (object)[
-                    'id' => 'menu-item-extend-tab',
+                    'id' => 'page-extend-tab',
                     'name' => trans('menu::forms.extend.title'),
                     'fields' => [
                         [
@@ -111,7 +134,7 @@ class PageSetEditorForm
                     ],
                 ],
                 (object)[
-                    'id' => 'menu-item-templates-tab',
+                    'id' => 'page-templates-tab',
                     'name' => trans('menu::forms.template.title'),
                     'expression' => 'function(item){ return (item.template_raw != undefined) }',
                     'fields' => [
@@ -126,7 +149,7 @@ class PageSetEditorForm
                     ],
                 ],
                 (object)[
-                    'id' => 'menu-item-translate-tab',
+                    'id' => 'page-translate-tab',
                     'name' => trans('menu::forms.localization.title'),
                     'expression' => 'function(item){ return (item.translate != undefined) }',
                     'fields' => [
