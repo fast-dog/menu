@@ -42,6 +42,12 @@ class MenuEventServiceProvider extends ServiceProvider
         'FastDog\Menu\Events\MenuResources' => [
             //<-- добавление ресурсов для создания меню
         ],
+        'FastDog\Menu\Events\PageAdminPrepare' => [
+            'FastDog\Core\Listeners\AdminItemPrepare',// <-- Поля даты обновления и т.д.
+            'FastDog\Core\Listeners\MetadataAdminPrepare',// <-- SEO
+            'FastDog\Menu\Listeners\PageAdminPrepare',
+            'FastDog\Menu\Listeners\PageSetEditorForm',
+        ]
     ];
 
 
