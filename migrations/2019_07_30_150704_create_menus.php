@@ -94,6 +94,7 @@ BEGIN
 END
  ");
 
+            // default all
             FastDog\Menu\Models\Menu::create([
                 'name' => 'root',
                 'alias' => 'root',
@@ -101,6 +102,8 @@ END
                 'rgt' => 2,
                 'site_id' => '000'
             ]);
+
+            // default site 1
             FastDog\Menu\Models\Menu::create([
                 'name' => 'root',
                 'alias' => 'root',
