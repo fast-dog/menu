@@ -80,6 +80,25 @@ class MenuFormController extends Controller implements FormControllerInterface
     }
 
     /**
+     * @param AddMenu $request
+     * @return JsonResponse
+     */
+    public function postAppendMenu(AddMenu $request): JsonResponse
+    {
+        foreach ($request->input('items', []) as $item) {
+            $request->merge([
+                'id' => $item['id'],
+                'menu_id' => $item['menu_id'],
+                'type' => $item['type'],
+                'name' => $item['name'],
+            ]);
+            $this->postMenu($request);
+        }
+
+        return $this->json(['success' => true], __METHOD__);
+    }
+
+    /**
      * Сохранение элемента
      *
      * @param AddMenu $request

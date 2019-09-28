@@ -67,6 +67,11 @@ Route::group([
             'uses' => $ctrl . '@postMenu',
         ]);
 
+        // Добавление позиции
+        \Route::post('/menu/append', [
+            'uses' => $ctrl . '@postAppendMenu',
+        ]);
+
         // API
         $ctrl = '\FastDog\Menu\Menu\Http\Controllers\Admin\ApiController';
 

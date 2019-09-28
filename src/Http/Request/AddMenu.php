@@ -39,6 +39,10 @@ class AddMenu extends FormRequest
      */
     public function rules()
     {
+        // append menu items
+        if ($this->input('append', 'N') === 'Y')
+            return [];
+
         return [
             'name' => 'required',
             'type' => 'required',
@@ -52,6 +56,10 @@ class AddMenu extends FormRequest
      */
     public function messages()
     {
+        // append menu items
+        if ($this->input('append', 'N') === 'Y')
+            return [];
+
         return [
             'name.required' => trans('menu::requests.add_menu.name.required'),
             'type.required' => trans('menu::requests.add_menu.type.required'),
