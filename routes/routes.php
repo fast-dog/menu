@@ -34,7 +34,6 @@ Route::group([
             'uses' => $ctrl . '@reorder',
         ]);
 
-
         // Обновление параметров меню из общего списка
         \Route::post('/menu/list/update', [
             'uses' => $ctrl . '@postMenuUpdate',
@@ -45,7 +44,14 @@ Route::group([
             'uses' => $ctrl . '@postMenuUpdate',
         ]);
 
-        //Форма
+        //Форма - Страницы
+        $ctrl = '\FastDog\Menu\Http\Controllers\Admin\PageFormController';
+
+        \Route::get('/menu/{id}', [
+            'uses' => $ctrl . '@getEditItem',
+        ])->where('id', '[0-9]+');
+
+        //Форма - Меню
         $ctrl = '\FastDog\Menu\Http\Controllers\Admin\MenuFormController';
 
         \Route::get('/menu/{id}', [
