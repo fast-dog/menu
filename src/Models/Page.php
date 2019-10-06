@@ -43,4 +43,18 @@ class Page extends BaseModel implements PropertiesInterface, MediaInterface
      * @var array $fillable
      */
     protected $fillable = [self::NAME, self::ALIAS, self::DATA, self::SITE_ID, self::TYPE, self::INTROTEXT, self::FULLTEXT];
+
+    public function getData(): array
+    {
+        return [
+            'id' => $this->id,
+            self::NAME => $this->{self::NAME},
+            self::ALIAS => $this->{self::ALIAS},
+            self::DATA => $this->{self::DATA},
+            self::SITE_ID => $this->{self::SITE_ID},
+            self::TYPE => $this->{self::TYPE},
+            self::INTROTEXT => $this->{self::INTROTEXT},
+            self::FULLTEXT => $this->{self::FULLTEXT},
+        ];
+    }
 }
