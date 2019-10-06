@@ -46,7 +46,8 @@ class MenuEventServiceProvider extends ServiceProvider
             'FastDog\Core\Listeners\AdminItemPrepare',// <-- Поля даты обновления и т.д.
             'FastDog\Menu\Listeners\PageAdminPrepare',
             'FastDog\Menu\Listeners\PageSetEditorForm',
-        ]
+            'FastDog\Core\Listeners\FormBuilder',// <-- Настройка формы
+        ],
     ];
 
 
