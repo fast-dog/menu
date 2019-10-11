@@ -3,7 +3,6 @@
 namespace FastDog\Menu;
 
 use FastDog\Config\Models\Translate;
-use FastDog\Core\Interfaces\ModuleInterface;
 use FastDog\Core\Interfaces\PrepareContent;
 use FastDog\Core\Models\Components;
 use FastDog\Core\Models\DomainManager;
@@ -12,8 +11,6 @@ use FastDog\Core\Store;
 use FastDog\Menu\Models\Menu as BaseMenu;
 use FastDog\Menu\Models\SiteMap;
 use FastDog\Menu\Events\MenuPrepare;
-
-use function foo\func;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -74,10 +71,10 @@ XML;
 
         $xml = new SimpleXMLElement($xmlStr);
 
-        SiteMap::where(function(Builder $query) use ($request) {
+        SiteMap::where(function (Builder $query) use ($request) {
             $query->where(SiteMap::SITE_ID, DomainManager::getSiteId());
             $query->where(SiteMap::ROUTE, 'LIKE', '%' . $request->root() . '%');
-        })->orderBy(SiteMap::PRIORITY, 'desc')->get()->each(function(SiteMap $item) use (&$xml) {
+        })->orderBy(SiteMap::PRIORITY, 'desc')->get()->each(function (SiteMap $item) use (&$xml) {
             $url = $xml->addChild('url');
             $url->addChild('loc', $item->{SiteMap::ROUTE});
             $url->addChild('lastmod', $item->{SiteMap::UPDATED_AT}->format('Y-m-d'));
@@ -138,7 +135,7 @@ XML;
                 'PRICE_MATRIX' => [],//<-- Диапазон ценовых предложений
             ];
             $category_id = null;
-            $item->catalogProperties->each(function($item) use (&$setFilters, &$category_id) {
+            $item->catalogProperties->each(function ($item) use (&$setFilters, &$category_id) {
                 $facet_id = $item->property_id + $item->category_id + (int)$item->value + $item->property->created_at->timestamp;
                 $category_id = $item->category_id;
                 switch ($item->property->type) {
@@ -271,7 +268,7 @@ XML;
     public function getTemplatesPaths(): array
     {
         return [
-            'menu' => '/menu/parent/*.blade.php'
+            'menu' => '/menu/parent/*.blade.php',
         ];
     }
 
@@ -288,7 +285,7 @@ XML;
 
         return [
             'id' => self::MODULE_ID,
-            'menu' => function() use ($paths, $templates_paths) {
+            'menu' => function () use ($paths, $templates_paths) {
                 $result = collect();
                 foreach ($this->getMenuType() as $id => $item) {
                     $result->push([
@@ -300,21 +297,22 @@ XML;
                     ]);
                 }
                 $result = $result->sortBy('sort');
+
                 return $result;
             },
             'templates_paths' => $templates_paths,
             'module_type' => $this->getMenuType(),
-            'admin_menu' => function() {
+            'admin_menu' => function () {
                 return $this->getAdminMenuItems();
             },
-            'access' => function() {
+            'access' => function () {
                 return [
                     '000',
                 ];
             },
-            'route' => function(Request $request, $item) {
+            'route' => function (Request $request, $item) {
                 return $this->getMenuRoute($request, $item);
-            }
+            },
         ];
     }
 
@@ -329,7 +327,7 @@ XML;
         $result = [];
 
         foreach (\App::make(ModuleManager::class)->getModules() as $module) {
-            $module['menu']()->each(function($data) use (&$result) {
+            $module['menu']()->each(function ($data) use (&$result) {
                 array_push($result, $data);
             });
         }
@@ -449,7 +447,7 @@ XML;
         /** @var Collection $menuItemsCollection */
         $menuItemsCollection = $storeManager->getCollection(self::class);
         if (null === $menuItemsCollection) {
-            $storeManager->pushCollection(self::class, self::where(function(Builder $query) {
+            $storeManager->pushCollection(self::class, self::where(function (Builder $query) {
 
             })->get());
             $menuItemsCollection = $storeManager->getCollection(self::class);
@@ -473,7 +471,7 @@ XML;
 
         if (null === $items) {
             if ($menuId && $root) {
-                $items = $root->descendants()->where(function(Builder $query) use (&$scope) {
+                $items = $root->descendants()->where(function (Builder $query) use (&$scope) {
                     $query->where(Menu::STATE, Menu::STATE_PUBLISHED);
                 })->$scope();
 
@@ -571,21 +569,21 @@ XML;
             'icon' => 'fa-table',
             'name' => trans('menu::interface.Меню'),
             'route' => '/menu/index',
-            'new' => '/menu/item/0'
+            'new' => '/menu/item/0',
         ]);
 
         array_push($result['children'], [
             'icon' => 'fa-file',
             'name' => trans('menu::interface.Страницы'),
             'route' => '/menu/pages',
-            'new' => '/menu/page/0'
+            'new' => '/menu/page/0',
         ]);
 
         array_push($result['children'], [
             'icon' => 'fa-file-o',
             'name' => trans('menu::interface.Материалы'),
-            'route' => '/menu/content',
-            'new' => '/menu/content/0'
+            'route' => '/content/items',
+            'new' => '/content/item/0',
         ]);
 
 
