@@ -129,7 +129,7 @@ class PageSetEditorForm
                         [
                             'type' => FormFieldTypes::TYPE_COMPONENT_SAMPLE_PROPERTIES,
                             'model_id' => $item->getModelId(),
-                            'model' => Menu::class,
+                            'model' => Page::class,
                         ],
                     ],
                 ],
