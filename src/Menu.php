@@ -4,6 +4,7 @@ namespace FastDog\Menu;
 
 use FastDog\Config\Models\Translate;
 use FastDog\Core\Interfaces\PrepareContent;
+use FastDog\Core\Models\Cache;
 use FastDog\Core\Models\Components;
 use FastDog\Core\Models\DomainManager;
 use FastDog\Core\Models\ModuleManager;
@@ -17,6 +18,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use SimpleXMLElement;
+use function foo\func;
 
 /**
  * Меню навигации
@@ -436,16 +438,22 @@ XML;
      * Метод возвращает отображаемый в публичной части контнет
      *
      * @param Components $module
-     * @return string
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View|string
      * @throws \Throwable
      */
     public function getContent(Components $module)
     {
-        \Auth::check();
+        auth()->check();
+
         /** @var $storeManager Store */
-        $storeManager = \App::make(Store::class);
+        $storeManager = app()->make(Store::class);
+
+        /** @var Cache $cache */
+        $cache = app()->make(Cache::class);
+
         /** @var Collection $menuItemsCollection */
         $menuItemsCollection = $storeManager->getCollection(self::class);
+
         if (null === $menuItemsCollection) {
             $storeManager->pushCollection(self::class, self::where(function (Builder $query) {
 
@@ -454,53 +462,45 @@ XML;
         }
         $data = $module->getData();
         $result = '';
-        $scope = 'defaultSite';
+
         $menuId = (isset($data['data']->item_id->id)) ? $data['data']->item_id->id : null;
 
-        $isGuest = \Auth::guest();
 
         $key = __METHOD__ . '::' . DomainManager::getSiteId() . '::menu_id-' . $menuId;
-        $key .= ($isGuest) ? '-guest' : '-user';
+        $key .= (auth()->guest()) ? '-guest' : '-user';
 
-        $isRedis = config('cache.default') == 'redis';
-
-        $items = ($isRedis) ? \Cache::tags(['menu'])->get($key, null) : \Cache::get($key, null);
         /** @var \FastDog\Menu\Models\Menu $root */
         $root = $menuItemsCollection->where('id', $menuId)->first();
 
+        if ($menuId && $root) {
+            $scope = 'defaultSite';
+            $items = $cache->get($key, function () use ($root, $scope) {
+                $isGuest = auth()->guest();
 
-        if (null === $items) {
-            if ($menuId && $root) {
+                /** @var Collection $items */
                 $items = $root->descendants()->where(function (Builder $query) use (&$scope) {
                     $query->where(Menu::STATE, Menu::STATE_PUBLISHED);
-                })->$scope();
+                })
+                    ->$scope()
+                    ->get();
 
-                $items = $items->get();
-
-                /**
-                 * Скрыть пункт меню по условиям авторизации
-                 *
-                 * @var $item self
-                 */
-                foreach ($items as &$item) {
+                $items->each(function (Menu &$item) use ($isGuest) {
                     $item->_hidden = 'N';
                     $showGuest = $item->getParameterByFilterData(['name' => 'SHOW_GUEST'], 'Y') == 'Y';
                     $showUser = $item->getParameterByFilterData(['name' => 'SHOW_USER'], 'Y') == 'Y';
 
+                    // Скрыть пункт меню по условиям авторизации
                     if ((false === $showGuest) && ($isGuest === true) ||
-                        (false === $showUser) && ($isGuest === false)
-                    ) {
+                        (false === $showUser) && ($isGuest === false)) {
                         $item->_hidden = 'Y';
                     }
-                }
+                });
+
                 $items = $items->toHierarchy();
 
-                if ($isRedis) {
-                    \Cache::tags(['menu'])->put($key, $items, config('cache.ttl_view', 5));
-                } else {
-                    \Cache::put($key, $items, config('cache.ttl_view', 5));
-                }
-            }
+                return $items;
+            }, ['menu']);
+
         }
 
         $render_data = [
@@ -510,18 +510,14 @@ XML;
 
         event(new MenuPrepare($render_data));
 
-        /**
-         * События обработки шаблонов
-         */
+        // События обработки шаблонов
         $prefixEvents = 'FastDog\Menu\Events\Site\\';
 
         switch ($data['data']->type->id) {
             case 'menu::item':
                 if (isset($data['data']->template->id)) {
                     $data['data']->template->id;
-                    /**
-                     * Вычисляем имена событий и если они зарегистрированны вызываем
-                     */
+                    // Вычисляем имена событий и если они зарегистрированны вызываем
                     $baseName = substr(camel_case(str_replace('.', '_', $data['data']->template->id)), -11);
 
                     $beforeRendingEvent = $prefixEvents . ucfirst($baseName . 'BeforeRending');
@@ -585,7 +581,6 @@ XML;
             'route' => '/content/items',
             'new' => '/content/item/0',
         ]);
-
 
         array_push($result['children'], [
             'icon' => 'fa-power-off',
