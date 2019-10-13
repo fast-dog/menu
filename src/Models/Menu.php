@@ -6,6 +6,7 @@ use Baum\Node;
 use FastDog\Core\Interfaces\MenuInterface;
 use FastDog\Core\Media\Interfaces\MediaInterface;
 use FastDog\Core\Media\Traits\MediaTraits;
+use FastDog\Core\Models\Cache;
 use FastDog\Core\Models\Domain;
 use FastDog\Core\Models\DomainManager;
 use FastDog\Core\Properties\BaseProperties;
@@ -220,74 +221,62 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
      */
     public function getData($cached = true)
     {
-        /** @var $storeManager Store */
-        $storeManager = \App::make(Store::class);
+        // получаем данне из кэша
+        $data = app()->make(Cache::class)
+            ->get(($cached === false) ? null : 'menu::' . $this->id, function () {
+                /** @var $storeManager Store */
+                $storeManager = app()->make(Store::class);
 
-        $key = 'menu::' . $this->id;
-        $isRedis = config('cache.default') == 'redis';
-        $data = ($isRedis) ? \Cache::tags(['menu'])->get($key, null) : \Cache::get($key, null);
-
-        if ($cached === false) {
-            $data = null;
-        }
-        if (config('cache.enabled') === false) {
-            $data = null;
-        }
-        if (null === $data) {
-            $menuItemsCollection = $storeManager->getCollection(\FastDog\Menu\Menu::class);
-            if (null === $menuItemsCollection) {
-                $storeManager->pushCollection(\FastDog\Menu\Menu::class, self::where(function(Builder $query) {
-
-                })->get());
                 $menuItemsCollection = $storeManager->getCollection(\FastDog\Menu\Menu::class);
-            }
+                if (null === $menuItemsCollection) {
+                    $storeManager->pushCollection(\FastDog\Menu\Menu::class, self::where(function (Builder $query) {
 
-            $parentsIds = [];
-            //ancestors
-            if ($this->id > 0) {
-                collect($menuItemsCollection->where($this->getLeftColumnName(), '<=', $this->getLeft())
-                    ->where($this->getRightColumnName(), '>=', $this->getRight())
-                    ->where('id', '!=', $this->id)->all())
-                    ->each(function($parent) use (&$parentsIds) {
-                        array_push($parentsIds, $parent->id);
-                    });
-            }
+                    })->get());
+                    $menuItemsCollection = $storeManager->getCollection(\FastDog\Menu\Menu::class);
+                }
 
-            if (is_string($this->{self::DATA})) {
-                $this->{self::DATA} = json_decode($this->{self::DATA});
-            }
-            $_data = $this->{self::DATA};
-            $parent = $menuItemsCollection->where('id', $this->parent_id)->first();
+                $parentsIds = [];
+                //ancestors
+                if ($this->id > 0) {
+                    collect($menuItemsCollection->where($this->getLeftColumnName(), '<=', $this->getLeft())
+                        ->where($this->getRightColumnName(), '>=', $this->getRight())
+                        ->where('id', '!=', $this->id)->all())
+                        ->each(function ($parent) use (&$parentsIds) {
+                            array_push($parentsIds, $parent->id);
+                        });
+                }
+
+                if (is_string($this->{self::DATA})) {
+                    $this->{self::DATA} = json_decode($this->{\FastDog\Menu\Menu::DATA});
+                }
+                $_data = $this->{self::DATA};
+                $parent = $menuItemsCollection->where('id', $this->parent_id)->first();
+
+                $data = [
+                    'id' => $this->id,
+                    Menu::NAME => $this->{Menu::NAME},
+                    Menu::DEPTH => $this->{Menu::DEPTH},
+                    Menu::ALIAS => $this->{Menu::ALIAS},
+                    Menu::STATE => $this->{Menu::STATE},
+                    'published' => $this->{Menu::STATE},
+                    Menu::ROUTE => $this->{Menu::ROUTE},
+                    Menu::SITE_ID => $this->{Menu::SITE_ID},
+                    'parent_id' => ($parent) ? $parent->id : $this->parent_id,
+                    'type' => (isset($_data->type)) ? $_data->type : '',
+                    'checked' => false,
+                    'total_children' => (($this->rgt - $this->lft) - 1) / 2,
+                    'menu_id' => ($this->parent) ? $this->parent->id : 0,//Arr::first($parentsIds),
+                    'data' => $_data,
+                    'allow_modified' => true,
+                ];
+
+                if ($data[Menu::SITE_ID] !== DomainManager::getSiteId()) {
+                    $data['allow_modified'] = DomainManager::checkIsDefault();
+                }
+
+            }, ['menu']);
 
 
-            $data = [
-                'id' => $this->id,
-                Menu::NAME => $this->{Menu::NAME},
-                Menu::DEPTH => $this->{Menu::DEPTH},
-                Menu::ALIAS => $this->{Menu::ALIAS},
-                Menu::STATE => $this->{Menu::STATE},
-                'published' => $this->{Menu::STATE},
-                Menu::ROUTE => $this->{Menu::ROUTE},
-                Menu::SITE_ID => $this->{Menu::SITE_ID},
-                'parent_id' => ($parent) ? $parent->id : $this->parent_id,
-                'type' => (isset($_data->type)) ? $_data->type : '',
-                'checked' => false,
-                'total_children' => (($this->rgt - $this->lft) - 1) / 2,
-                'menu_id' => ($this->parent) ? $this->parent->id : 0,//Arr::first($parentsIds),
-                'data' => $_data,
-                'allow_modified' => true,
-            ];
-
-
-            if ($data[Menu::SITE_ID] !== DomainManager::getSiteId()) {
-                $data['allow_modified'] = DomainManager::checkIsDefault();
-            }
-            if ($isRedis) {
-                \Cache::tags(['menu'])->put($key, $data, config('cache.ttl_menu', 5));
-            } else {
-                \Cache::put($key, $data, config('cache.ttl_menu', 5));
-            }
-        }
         if (is_string($data['data'])) {
             $data->data = json_decode($data->data);
         }
@@ -385,7 +374,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
         }
         if (isset($this->{self::DATA}->type)) {
             if (isset($this->{self::DATA}->{'module_data'}->{'menu'})) {
-                $result = Arr::first(array_filter($this->{self::DATA}->{'module_data'}->{'menu'}, function($item) {
+                $result = Arr::first(array_filter($this->{self::DATA}->{'module_data'}->{'menu'}, function ($item) {
                     return $item->id == $this->{self::DATA}->type;
                 }));
             }
@@ -405,13 +394,13 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
     public static function getRoots()
     {
         $result = [];
-        $roots = Menu::where(function(Builder $query) {
+        $roots = Menu::where(function (Builder $query) {
             $query->where('lft', 1);
             if (DomainManager::checkIsDefault() === false) {
                 $query->where(Menu::SITE_ID, DomainManager::getSiteId());
             }
 
-        })->get()->each(function(Menu $root) use (&$result) {
+        })->get()->each(function (Menu $root) use (&$result) {
 
             array_push($result, [
                 'id' => $root->id,
@@ -419,7 +408,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
             ]);
 
             $root->descendantsAndSelf()->withoutSelf()->limitDepth(1)->get()
-                ->each(function(Menu $item) use (&$result) {
+                ->each(function (Menu $item) use (&$result) {
                     $data = $item->getData();
                     $allow = true;
                     if ($data[Menu::SITE_ID] !== DomainManager::getSiteId()) {
@@ -450,6 +439,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
         $result = [];
         $roots = Menu::where('lft', 1)->get();
 
+        /** @var self $root */
         foreach ($roots as $root) {
             $allow = true;
             //проверяем принадлежность меню к сайту, разрешено ли добавлять текущему пользователю?
@@ -565,6 +555,17 @@ SQL
     }
 
     /**
+     * Схема маршрута по умолчанию
+     * {id}-{alias}.html
+     *
+     * @return string
+     */
+    public function getRouteSchema(): string
+    {
+        return '{id}-{alias}.html';
+    }
+
+    /**
      * Имя
      * @return mixed
      */
@@ -625,7 +626,7 @@ SQL
      */
     public static function findMenuItem($segment)
     {
-        return self::where(function(Builder $query) use ($segment) {
+        return self::where(function (Builder $query) use ($segment) {
             $query->where(self::ROUTE, 'LIKE', '%' . $segment . '%');
         })->withTrashed()->get();
 
@@ -763,7 +764,7 @@ SQL
                 'action' => [
                     'edit' => true,
                     'delete' => true,
-                ]
+                ],
             ],
             [
                 'name' => trans('menu::forms.general.fields.created_at'),
@@ -996,7 +997,7 @@ SQL
     {
         $count = 0;
         $route = explode('/', $route);
-        array_filter($route, function($item) use (&$count) {
+        array_filter($route, function ($item) use (&$count) {
             if (!empty($item)) {
                 $count++;
             };
