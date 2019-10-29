@@ -4,6 +4,7 @@ namespace FastDog\Menu;
 
 
 use FastDog\Menu\Policies\MenuPolicy;
+use FastDog\Menu\Policies\PagePolicy;
 use FastDog\User\Policies\UserPolicy;
 use FastDog\User\Policies\UsersMailingPolicy;
 use FastDog\User\Policies\UsersMailingTemplatesPolicy;
@@ -24,7 +25,8 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        \FastDog\Menu\Models\Menu::class => MenuPolicy::class
+        \FastDog\Menu\Models\Menu::class => MenuPolicy::class,
+        \FastDog\Menu\Models\Page::class => PagePolicy::class,
     ];
 
     /**

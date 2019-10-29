@@ -54,7 +54,7 @@ Route::group([
         //Таблица - Страницы
         $ctrl = '\FastDog\Menu\Http\Controllers\Admin\PageTableController';
 
-        \Route::get('/pages', [
+        \Route::post('/pages', [
             'uses' => $ctrl . '@list',
         ])->where('id', '[0-9]+');
 
