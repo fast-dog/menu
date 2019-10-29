@@ -274,6 +274,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
                     $data['allow_modified'] = DomainManager::checkIsDefault();
                 }
 
+                return $data;
             }, ['menu']);
 
 

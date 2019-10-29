@@ -68,7 +68,9 @@ class MenuItemsAdminPrepare
         }
 
         foreach ($data['items'] as &$item) {
-            $item['suffix'] = DomainManager::getDomainSuffix($item[Menu::SITE_ID]);
+            if(isset($item[Menu::SITE_ID])){
+                $item['suffix'] = DomainManager::getDomainSuffix($item[Menu::SITE_ID]);
+            }
         }
 
         if (config('app.debug')) {
