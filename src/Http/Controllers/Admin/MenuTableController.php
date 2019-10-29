@@ -72,6 +72,7 @@ class MenuTableController extends Controller implements TableControllerInterface
     /**
      * Описание структуры колонок таблицы корневых элементов меню
      * @return Collection
+     * @deprecated
      */
     public function getColsRoot(): Collection
     {

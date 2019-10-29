@@ -9,7 +9,7 @@ Route::group([
     'prefix' => config('core.admin_path', 'admin'),
     'middleware' => ['web', FastDog\Admin\Http\Middleware\Admin::class],
 ],
-    function() {
+    function () {
 
         // Таблица
         $ctrl = '\FastDog\Menu\Http\Controllers\Admin\MenuTableController';
@@ -49,6 +49,13 @@ Route::group([
 
         \Route::get('/page/{id}', [
             'uses' => $ctrl . '@getEditItem',
+        ])->where('id', '[0-9]+');
+
+        //Таблица - Страницы
+        $ctrl = '\FastDog\Menu\Http\Controllers\Admin\PageTableController';
+
+        \Route::get('/pages', [
+            'uses' => $ctrl . '@list',
         ])->where('id', '[0-9]+');
 
         //Форма - Меню
@@ -148,15 +155,15 @@ if (!\App::runningInConsole()) {
     /**
      * Получаем активные пункты меню для определения параметров доступных маршрутов
      */
-    \FastDog\Menu\Models\Menu::where(function(Builder $query) {
+    \FastDog\Menu\Models\Menu::where(function (Builder $query) {
         $query->where(Menu::SITE_ID, DomainManager::getSiteId());
         $query->where(Menu::STATE, Menu::STATE_PUBLISHED);
-        $query->where(function(Builder $query) {
+        $query->where(function (Builder $query) {
             $query
                 //->whereRaw(\DB::raw('data->"$.type" != \'catalog_index\''))
                 ->whereRaw(\DB::raw('data->"$.type" != \'catalog_categories\''));
         });
-    })->get()->each(function(\FastDog\Menu\Models\Menu $item) {
+    })->get()->each(function (\FastDog\Menu\Models\Menu $item) {
         $data = $item->getData();
         if (isset($item->route) && (!in_array($item->route, ['#', 'menu']))) {
             if (isset($data['data']->route_data)) {
@@ -167,7 +174,7 @@ if (!\App::runningInConsole()) {
                  */
                 if (!in_array($item->route, ['catalog'])) {
                 }
-                \Route::get($item->route, function(Request $request) use ($item, $data) {
+                \Route::get($item->route, function (Request $request) use ($item, $data) {
                     return FastDog\Menu\Menu::buildRoute($item, $data, $request);
                 });
 
@@ -180,7 +187,7 @@ if (!\App::runningInConsole()) {
 /**
  * Карта сайта
  */
-\Route::get('sitemap.xml', function(Request $request) {
+\Route::get('sitemap.xml', function (Request $request) {
 
     return self::buildSiteMap($request);
 });
