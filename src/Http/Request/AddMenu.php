@@ -1,6 +1,6 @@
 <?php
 
-namespace FastDog\Menu\Request;
+namespace FastDog\Menu\Http\Request;
 
 
 use FastDog\User\User;

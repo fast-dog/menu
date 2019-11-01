@@ -48,6 +48,8 @@ class MenuEventServiceProvider extends ServiceProvider
             'FastDog\Menu\Listeners\PageSetEditorForm',
             'FastDog\Core\Listeners\FormBuilder',// <-- Настройка формы
         ],
+        'FastDog\Menu\Events\PageAdminAfterSave' => [],
+        'FastDog\Menu\Events\PageAdminBeforeSave' => [],
     ];
 
 

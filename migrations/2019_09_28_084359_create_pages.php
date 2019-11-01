@@ -15,14 +15,17 @@ class CreatePages extends Migration
     public function up()
     {
         if (!Schema::hasTable('pages')) {
-            Schema::create('pages', function(Blueprint $table) {
+            Schema::create('pages', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('name')->comment('Название');
                 $table->string('alias')->nullable()->comment('Псевдоним');
                 $table->char('site_id', 3)->default('001')->comment('Код сайта');
                 $table->tinyInteger(\FastDog\Menu\Models\Page::STATE)
                     ->default(\FastDog\Menu\Models\Page::STATE_PUBLISHED)->comment('Состояние');
-
+                $table->text('introtext')->nullable()->comment('Вступительный текст страницы');
+                $table->text('fulltext')->nullable()->comment('Полный текст страницы');
+                $table->json('data')->nullable()->comment('Дополнительные параметры');
+                $table->integer('view_counter')->default(0)->comment('Кол-во просмотров');
                 $table->index('alias', 'IDX_pages_alias');
                 $table->timestamps();
                 $table->softDeletes();

@@ -37,6 +37,12 @@ class Page extends BaseModel implements TableModelInterface, PropertiesInterface
     const FULLTEXT = 'fulltext';
 
     /**
+     * Кол-во просмотров
+     * @const string
+     */
+    const VIEW_COUNTER = 'view_counter';
+
+    /**
      * @var string $table
      */
     public $table = 'pages';
@@ -45,7 +51,7 @@ class Page extends BaseModel implements TableModelInterface, PropertiesInterface
      * Массив полей автозаполнения
      * @var array $fillable
      */
-    protected $fillable = [self::NAME, self::ALIAS, self::DATA, self::SITE_ID, self::TYPE, self::INTROTEXT, self::FULLTEXT];
+    protected $fillable = [self::NAME, self::ALIAS, self::DATA, self::SITE_ID, self::TYPE, self::INTROTEXT, self::FULLTEXT, self::VIEW_COUNTER];
 
     /**
      * Возвращает общую информацию о текущей модели
