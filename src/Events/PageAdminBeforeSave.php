@@ -1,6 +1,6 @@
 <?php
 
-namespace FastDog\Content\Events;
+namespace FastDog\Menu\Events;
 
 /**
  * Перед сохранением материала

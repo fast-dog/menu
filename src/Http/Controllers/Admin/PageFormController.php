@@ -3,7 +3,7 @@
 namespace FastDog\Menu\Http\Controllers\Admin;
 
 
-use FastDog\Content\Events\PageAdminBeforeSave;
+use FastDog\Menu\Events\PageAdminBeforeSave;
 use FastDog\Core\Form\Interfaces\FormControllerInterface;
 use FastDog\Core\Form\Traits\FormControllerTrait;
 use FastDog\Core\Http\Controllers\Controller;
