@@ -51,12 +51,18 @@ Route::group([
             'uses' => $ctrl . '@getEditItem',
         ])->where('id', '[0-9]+');
 
+        \Route::post('/page/create', [
+            'uses' => $ctrl . '@postSave',
+        ]);
+
         //Таблица - Страницы
         $ctrl = '\FastDog\Menu\Http\Controllers\Admin\PageTableController';
 
         \Route::post('/pages', [
             'uses' => $ctrl . '@list',
         ])->where('id', '[0-9]+');
+
+
 
         //Форма - Меню
         $ctrl = '\FastDog\Menu\Http\Controllers\Admin\MenuFormController';
