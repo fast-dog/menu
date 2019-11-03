@@ -41,7 +41,7 @@ class AddPage extends FormRequest
     {
         return [
             'name' => 'required',
-            'alias' => 'required',
+            //'alias' => 'required',
         ];
     }
 

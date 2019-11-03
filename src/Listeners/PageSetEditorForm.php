@@ -2,7 +2,7 @@
 
 namespace FastDog\Menu\Listeners;
 
-use App\Modules\Catalog\Entity\CatalogItems;
+
 use FastDog\Core\Models\DomainManager;
 use FastDog\Core\Models\FormFieldTypes;
 use FastDog\Menu\Events\PageAdminPrepare as PageAdminPrepareEvent;
