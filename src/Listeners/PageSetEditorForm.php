@@ -134,6 +134,15 @@ class PageSetEditorForm
                     ],
                 ],
                 (object)[
+                    'id' => 'catalog-item-seo-tab',
+                    'name' => trans('content::forms.seo.title'),
+                    'fields' => [
+                        [
+                            'type' => FormFieldTypes::TYPE_COMPONENT_SEO,
+                        ],
+                    ],
+                ],
+                (object)[
                     'id' => 'page-templates-tab',
                     'name' => trans('menu::forms.template.title'),
                     'expression' => 'function(item){ return (item.template_raw != undefined) }',
