@@ -75,14 +75,6 @@ class PageAdminAfterSave
             $item->storeMedia(collect($data['media']));
         }
 
-        if (is_array($data['data'])) {
-            $data['data'] = (object)$data['data'];
-        }
-
-        if (!isset($data['data']->{'meta_search_keywords'})) {
-            $data['data']->{'meta_search_keywords'} = '';
-        }
-
         $event->setData($data);
     }
 }

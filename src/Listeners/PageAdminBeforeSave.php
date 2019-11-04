@@ -163,15 +163,18 @@ class PageAdminBeforeSave
         $domainList = DomainManager::getAccessDomainList();
         foreach ($domainList as $item) {
             if ($item['id'] == DomainManager::getSiteId()) {
-                $baseDomain = $item[DomainManager::URL];
-                $data[Page::INTROTEXT] = str_replace($baseDomain, '', $data[Page::INTROTEXT]);
-                $data[Page::FULLTEXT] = str_replace($baseDomain, '', $data[Page::FULLTEXT]);
+                if (isset($item[DomainManager::URL])) {
+                    $baseDomain = $item[DomainManager::URL];
+                    $data[Page::INTROTEXT] = str_replace($baseDomain, '', $data[Page::INTROTEXT]);
+                    $data[Page::FULLTEXT] = str_replace($baseDomain, '', $data[Page::FULLTEXT]);
+                }
             }
         }
 
         if (!is_string($data['data'])) {
             $data['data'] = json_encode($data['data']);
         }
+
         $event->setData($data);
     }
 }
