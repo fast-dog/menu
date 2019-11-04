@@ -11,7 +11,7 @@ use FastDog\Core\Models\DomainManager;
 use FastDog\Menu\Events\PageAdminPrepare;
 use FastDog\Menu\Http\Request\AddPage;
 use FastDog\Menu\Models\Page;
-use FastDog\Page\Events\PageAdminAfterSave;
+use FastDog\Menu\Events\PageAdminAfterSave;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -62,7 +62,7 @@ class PageFormController extends Controller implements FormControllerInterface
      */
     public function postSave(AddPage $request): JsonResponse
     {
-        $result = ['success' => false];
+        $result = ['success' => false, 'items' => []];
 
         $data = $request->all();
         $item = null;

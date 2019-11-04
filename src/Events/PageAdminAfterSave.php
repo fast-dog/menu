@@ -1,6 +1,6 @@
 <?php
 
-namespace FastDog\Page\Events;
+namespace FastDog\Menu\Events;
 
 use FastDog\Menu\Models\Page;
 
