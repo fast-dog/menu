@@ -50,7 +50,7 @@ class PageFormController extends Controller implements FormControllerInterface
 
         $this->breadcrumbs->push([
             'url' => false,
-            'name' => ($this->item->id > 0) ? $this->item->{Page::NAME} : trans('menu::forms.general.new_item'),
+            'name' => ($this->item->id > 0) ? $this->item->{Page::NAME} : trans('menu::page.general.new_item'),
         ]);
 
         return $this->json($result, __METHOD__);
