@@ -62,7 +62,7 @@ class PageFormController extends Controller implements FormControllerInterface
      */
     public function postSave(AddPage $request): JsonResponse
     {
-        $result = ['success' => false, 'items' => []];
+        $result = ['success' => true, 'items' => []];
 
         $data = $request->all();
         $item = null;

@@ -87,7 +87,7 @@ class Page extends BaseModel implements TableModelInterface, PropertiesInterface
                 'name' => trans('menu::forms.general.fields.name'),
                 'key' => self::NAME,
                 'domain' => true,
-                'link' => 'menu_item',
+                'link' => 'page_item',
                 'extra' => true,
                 'action' => [
                     'edit' => true,
