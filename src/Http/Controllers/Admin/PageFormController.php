@@ -113,4 +113,21 @@ class PageFormController extends Controller implements FormControllerInterface
     {
         return PageAdminPrepare::class;
     }
+
+
+    /**
+     * Обновление параметров страницы
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
+     */
+    public function postUpdate(Request $request): JsonResponse
+    {
+        $result = ['success' => true, 'items' => []];
+
+        $this->updatedModel($request->all(), Page::class);
+
+        return $this->json($result, __METHOD__);
+    }
 }

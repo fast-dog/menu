@@ -55,13 +55,17 @@ Route::group([
             'uses' => $ctrl . '@postSave',
         ]);
 
+        // Обновление объекта из списка (публикаций, перемещение в корзинку)
+        \Route::post('/pages/update', [
+            'uses' => $ctrl . '@postUpdate',
+        ]);
+
         //Таблица - Страницы
         $ctrl = '\FastDog\Menu\Http\Controllers\Admin\PageTableController';
 
         \Route::post('/pages', [
             'uses' => $ctrl . '@list',
         ])->where('id', '[0-9]+');
-
 
 
         //Форма - Меню
