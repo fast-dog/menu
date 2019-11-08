@@ -40,7 +40,7 @@ class MenuEventServiceProvider extends ServiceProvider
             //<-- добавление разделов к основной форме редактирования
         ],
         'FastDog\Menu\Events\MenuResources' => [
-            //<-- добавление ресурсов для создания меню
+            'FastDog\Menu\Listeners\MenuResources',  //<-- добавление ресурсов для создания меню
         ],
         'FastDog\Menu\Events\PageAdminPrepare' => [
             'FastDog\Core\Listeners\AdminItemPrepare',// <-- Поля даты обновления и т.д.
