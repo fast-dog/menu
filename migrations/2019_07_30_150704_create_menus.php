@@ -15,7 +15,7 @@ class CreateMenus extends Migration
     public function up()
     {
         if (!Schema::hasTable('menus')) {
-            Schema::create('menus', function(Blueprint $table) {
+            Schema::create('menus', function (Blueprint $table) {
                 $table->increments('id');
                 $table->integer('parent_id')->default(0);
                 $table->integer('lft');
@@ -100,18 +100,26 @@ END
                 'alias' => 'root',
                 'lft' => 1,
                 'rgt' => 2,
-                'site_id' => '000'
+                'site_id' => '000',
             ]);
 
-            // default site 1
-            FastDog\Menu\Models\Menu::create([
+            /** @var FastDog\Menu\Models\Menu $root default site 1 */
+            $root = FastDog\Menu\Models\Menu::create([
                 'name' => 'root',
                 'alias' => 'root',
                 'lft' => 1,
                 'rgt' => 2,
-                'site_id' => '001'
+                'site_id' => '001',
+            ]);
+            /** @var FastDog\Menu\Models\Menu $topMenu */
+            $topMenu = FastDog\Menu\Models\Menu::create([
+                'name' => 'Top menu',
+                'alias' => 'top-menu',
+                'site_id' => '001',
+                'route' => \DB::raw('null'),
             ]);
 
+            $topMenu->makeLastChildOf($root);
         }
     }
 
