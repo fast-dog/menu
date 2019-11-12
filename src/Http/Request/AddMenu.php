@@ -43,12 +43,17 @@ class AddMenu extends FormRequest
         if ($this->input('append', 'N') === 'Y')
             return [];
 
-        return [
+        $rules = [
             'name' => 'required',
             'type' => 'required',
-            'menu_id' => 'required',
             'site_id' => 'required',
         ];
+
+        if ($this->input('type.id') != 'menu::menu') {
+            $rules['menu_id'] = 'required';
+        }
+
+        return $rules;
     }
 
     /**
@@ -75,7 +80,7 @@ class AddMenu extends FormRequest
     public function getValidatorInstance()
     {
         $validator = parent::getValidatorInstance();
-        $validator->after(function() use ($validator) {
+        $validator->after(function () use ($validator) {
             $input = $this->all();
             if (isset($input['id']) && isset($input['depth'])) {
                 if ($input['depth'] > 1 && $input['menu_id'] == null) {

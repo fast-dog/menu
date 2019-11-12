@@ -2,7 +2,6 @@
 
 namespace FastDog\Menu\Http\Controllers\Admin;
 
-
 use FastDog\Core\Form\Interfaces\FormControllerInterface;
 use FastDog\Core\Form\Traits\FormControllerTrait;
 use FastDog\Core\Http\Controllers\Controller;
@@ -27,10 +26,10 @@ use Illuminate\Support\Str;
 class MenuFormController extends Controller implements FormControllerInterface
 {
     use FormControllerTrait;
-
+    
     /**
      * MenuFormController constructor.
-     * @param Menu $model
+     * @param  Menu  $model
      */
     public function __construct(Menu $model)
     {
@@ -38,9 +37,9 @@ class MenuFormController extends Controller implements FormControllerInterface
         $this->page_title = trans('menu::interface.Меню навигации');
         parent::__construct();
     }
-
+    
     /**
-     * @param Request $request
+     * @param  Request  $request
      * @return JsonResponse
      */
     public function getEditItem(Request $request): JsonResponse
@@ -48,39 +47,31 @@ class MenuFormController extends Controller implements FormControllerInterface
         $this->breadcrumbs->push(['url' => '/menu/index', 'name' => trans('menu::interface.Управление')]);
         $parent_id = \Route::input('parent_id', null);
         $parent = null;
-
         //Отключаем кэширование в методе Menu::getData(cached)
         config([
             'cache.enabled' => false,
         ]);
         $result = $this->getItemData($request);
-
         $result['item'] = array_first($result['items']);
-
-
         if ($parent_id) {
             $parent = Menu::find($parent_id);
         } else {
             $parent = $this->item->parent;
         }
-
         if ($parent) {
             $this->breadcrumbs->push(['url' => '/menu/list/' . $parent->id, 'name' => $parent->{Menu::NAME}]);
         }
-
         $this->breadcrumbs->push([
             'url' => false,
-            'name' => ($this->item->id > 0) ? $this->item->{Menu::NAME} : trans('menu::forms.general.new_item')
+            'name' => ($this->item->id > 0) ? $this->item->{Menu::NAME} : trans('menu::forms.general.new_item'),
         ]);
-
-
+        
         //$result['items'] = Menu::getAll();
-
         return $this->json($result, __METHOD__);
     }
-
+    
     /**
-     * @param AddMenu $request
+     * @param  AddMenu  $request
      * @return JsonResponse
      */
     public function postAppendMenu(AddMenu $request): JsonResponse
@@ -95,40 +86,39 @@ class MenuFormController extends Controller implements FormControllerInterface
             ]);
             $this->postMenu($request);
         }
-
+        
         return $this->json(['success' => true], __METHOD__);
     }
-
+    
     /**
      * Сохранение элемента
      *
-     * @param AddMenu $request
+     * @param  AddMenu  $request
      * @return \Illuminate\Http\JsonResponse
      */
     public function postMenu(AddMenu $request): JsonResponse
     {
         $result = ['success' => true];
         $data = $request->all();
-
+        
         $data['parent_id'] = $request->input('parent_id.id');
         $data[Menu::STATE] = $request->input(Menu::STATE . '.id');
-
-
+        
         if ($data[Menu::ALIAS] == '' && $data['id'] == 0) {
             $data[Menu::ALIAS] = Str::slug($data[Menu::NAME]);
         }
-
+        
         $root = Menu::where([
             'id' => $request->input('menu_id.id'),
         ])->first();
-
+        
         if (null === $root) {
-            $root = Menu::where(function(Builder $query) use ($request) {
+            $root = Menu::where(function (Builder $query) use ($request) {
                 $query->where('lft', 1);
                 $query->where(Menu::SITE_ID, $request->input(Menu::SITE_ID . '.id', DomainManager::getSiteId()));
             })->first();
         }
-
+        
         $updateData = [
             Menu::NAME => $data[Menu::NAME],
             Menu::ALIAS => $data[Menu::ALIAS],
@@ -136,39 +126,39 @@ class MenuFormController extends Controller implements FormControllerInterface
             Menu::SITE_ID => $request->input(Menu::SITE_ID . '.id', DomainManager::getSiteId()),
             Menu::DATA => json_encode($data[Menu::DATA]),
         ];
-
+        
         // Попытка добавить пункт меню в чужой\общий сайт
         if ($root->{Menu::SITE_ID} !== DomainManager::getSiteId()) {
             if (DomainManager::checkIsDefault() === false) {
                 return $this->json([
                     'success' => false,
                     'message' => trans('menu::interface.error.Ошибка выполнения команды, Вам не разрешено добавление элементов в меню') .
-                        ' "' . $root->{Menu::NAME} . '"',
+                        ' "' . $root->{Menu::NAME} . '#' . $root->{Menu::SITE_ID} . '"',
                 ]);
             }
             if (!$request->has(Menu::SITE_ID . '.id')) {
                 $updateData[Menu::SITE_ID] = $root->{Menu::SITE_ID};
             }
         }
-
+        
         if (!isset($data['id']) || $data['id'] == 0) {
             /** @var Menu $item */
             $item = Menu::create($updateData);
-
+            
             if ($data['parent_id']) {
                 $parent = Menu::find($data['parent_id']);
                 if ($parent) {
                     $item->makeLastChildOf($parent);
                 }
             }
-
+            
             $data['id'] = $item->id;
         }
-
+        
         /** @var $item Menu */
         $item = Menu::find($data['id']);
         $itemData = $item->getData(false);
-
+        
         // Если изменен родительский элемент, перемещаем
         if (isset($data['menu_id']['id']) && $data['menu_id']['id'] <> $itemData['menu_id']) {
             if ($root) {
@@ -195,23 +185,23 @@ class MenuFormController extends Controller implements FormControllerInterface
                 }
             }
         }
-
+        
         if ((isset($data['parent_id']) && $data['parent_id']) > 0 &&
             ($data['parent_id'] <> $itemData['parent_id'])) {
             $parent = Menu::find($data['parent_id']);
             $item->makeLastChildOf($parent);
         }
-
+        
         if ($item) {
             $item = Menu::find($item->id);
             $itemData = $item->getData(false);
-
+            
             // Обновляем параметры пункта меню
             $_data = [];
-
+            
             \App::make(ModuleManager::class)->getModules()
-                ->each(function($data) use (&$_data, $request, $item) {
-                    collect($data['module_type'])->each(function($type) use ($data, &$_data, $request, $item) {
+                ->each(function ($data) use (&$_data, $request, $item) {
+                    collect($data['module_type'])->each(function ($type) use ($data, &$_data, $request, $item) {
                         if ($data['id'] . '::' . $type['id'] === $request->input('type.id')) {
                             if ($data['route'] instanceof \Closure) {
                                 $routeData = $data['route']($request, $item);
@@ -223,15 +213,14 @@ class MenuFormController extends Controller implements FormControllerInterface
                         }
                     });
                 });
-
-
+            
             $_data['meta_title'] = $request->input('data.meta_title', $data[Menu::NAME]);
             $_data['meta_description'] = $request->input('data.meta_description');
             $_data['meta_keywords'] = $request->input('data.meta_keywords');
             $_data['meta_robots'] = $request->input('data.meta_robots');
-
+            
             $updateData['data'] = json_encode($_data);
-
+            
             // Изменен код доступа к пункту меню
             if ($updateData[Menu::SITE_ID] <> $itemData[Menu::SITE_ID]) {
                 if (DomainManager::checkIsDefault()) {
@@ -246,13 +235,13 @@ class MenuFormController extends Controller implements FormControllerInterface
                     }
                 }
             }
-
+            
             event(new MenuItemBeforeSave($updateData, $item));
-
+            
             Menu::where('id', $data['id'])->update($updateData);
-
+            
             event(new MenuItemAfterSave($result, $item));
-
+            
             $result['items'][] = $item->getData(false);
 //            if ($request->has('set_properties')) { fix me: move to MenuItemAfterSaveListeners Catalog cmp
 //                /**
@@ -268,8 +257,7 @@ class MenuFormController extends Controller implements FormControllerInterface
 //                event(new CatalogCreateProperty($properties, $item));
 //            }
         }
-
+        
         return $this->json($result, __METHOD__);
     }
-
 }
