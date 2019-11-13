@@ -46,7 +46,7 @@ class MenuResources
         
         Page::all()->each(function (Page $item) use (&$data) {
             $data['resource']['pages']['items']->push([
-                'id' => 'pages::item',
+                'id' => 'menu::page',
                 'name' => $item->{Page::NAME},
                 'sort' => (int) $item->{Page::SORT},
                 'data' => [

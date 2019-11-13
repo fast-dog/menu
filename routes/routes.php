@@ -34,16 +34,11 @@ Route::group([
             'uses' => $ctrl . '@reorder',
         ]);
 
-        // Обновление параметров меню из общего списка
-        \Route::post('/menu/list/update', [
+        // Обновление параметров меню
+        \Route::post('/menu/update', [
             'uses' => $ctrl . '@postMenuUpdate',
         ]);
-
-        // Обновление параметров меню из общего списка
-        \Route::post('/menu/roots/update', [
-            'uses' => $ctrl . '@postMenuUpdate',
-        ]);
-
+        
         //Форма - Страницы
         $ctrl = '\FastDog\Menu\Http\Controllers\Admin\PageFormController';
 
@@ -74,17 +69,8 @@ Route::group([
         \Route::get('/menu/{id}', [
             'uses' => $ctrl . '@getEditItem',
         ])->where('id', '[0-9]+');
-
-        \Route::get('/menu-root/{parent_id}', [
-            'uses' => $ctrl . '@getEditItem',
-
-        ])->where('id', '[0-9]+');
-
-        // Обновление парамтеров позиции
-//        \Route::post('/menu',  [
-//            'uses' => $ctrl . '@postMenu',
-//        ]);
-
+        
+        
         // Добавление позиции
         \Route::post('/menu/create', [
             'uses' => $ctrl . '@postMenu',
@@ -108,11 +94,7 @@ Route::group([
             'uses' => $ctrl . '@postClearCache',
         ]);
 
-        // Изменение доступа к модулю
-        \Route::post('/menu/access', [
-            'uses' => $ctrl . '@postAccess',
-        ]);
-
+     
         // Статистика переходов
         \Route::get('/menu/diagnostic', [
             'uses' => $ctrl . '@getDiagnostic',

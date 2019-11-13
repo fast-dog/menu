@@ -20,7 +20,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use SimpleXMLElement;
-use function foo\func;
+
 
 /**
  * Меню навигации
@@ -128,6 +128,7 @@ XML;
             }
             /**
              * Определение фильтра меню для каталога (модулей каталога)
+             * TODO: перенести в событие
              */
             $setFilters = [
                 'QUERY' => null,
@@ -265,6 +266,7 @@ XML;
             ['id' => 'menu', 'name' => trans('menu::menu.parent'), 'sort' => 1,],
             ['id' => 'static', 'name' => trans('menu::menu.link'), 'sort' => 20,],
             ['id' => 'alias', 'name' => trans('menu::menu.alias'), 'sort' => 30,],
+            ['id' => 'page', 'name' => trans('menu::menu.page'), 'sort' => 40,],
         ];
     }
     
