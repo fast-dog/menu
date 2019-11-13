@@ -79,10 +79,13 @@ class MenuFormController extends Controller implements FormControllerInterface
         foreach ($request->input('items', []) as $item) {
             $request->merge([
                 'id' => $item['id'],
-                'menu_id' => $item['menu_id'],
+                'menu_id' => [
+                    'id' => $request->input('menu_id')
+                ],
                 'type' => $item['type'],
                 'name' => $item['name'],
                 'alias' => '',
+                'data' => $item['data']
             ]);
             $this->postMenu($request);
         }
@@ -124,7 +127,7 @@ class MenuFormController extends Controller implements FormControllerInterface
             Menu::ALIAS => $data[Menu::ALIAS],
             Menu::ROUTE => \DB::raw('null'),
             Menu::SITE_ID => $request->input(Menu::SITE_ID . '.id', DomainManager::getSiteId()),
-            Menu::DATA => json_encode($data[Menu::DATA]),
+            Menu::DATA => json_encode((isset($data[Menu::DATA])) ? $data[Menu::DATA] : []),
         ];
         
         // Попытка добавить пункт меню в чужой\общий сайт
@@ -199,7 +202,7 @@ class MenuFormController extends Controller implements FormControllerInterface
             // Обновляем параметры пункта меню
             $_data = [];
             
-            \App::make(ModuleManager::class)->getModules()
+            app()->make(ModuleManager::class)->getModules()
                 ->each(function ($data) use (&$_data, $request, $item) {
                     collect($data['module_type'])->each(function ($type) use ($data, &$_data, $request, $item) {
                         if ($data['id'] . '::' . $type['id'] === $request->input('type.id')) {
