@@ -70,7 +70,8 @@ class PageFormController extends Controller implements FormControllerInterface
         if (DomainManager::checkIsDefault() === false) {
             $data[Page::SITE_ID] = DomainManager::getSiteId();
         }
-        if ($data[Page::ALIAS] == '#') {
+        
+        if ($data[Page::ALIAS] == '#' || $data[Page::ALIAS] == '') {
             $data[Page::ALIAS] = str_slug($data[Page::NAME]);
         }
 

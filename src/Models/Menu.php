@@ -116,7 +116,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
      * Тип: Страница
      * @const string
      */
-    const TYPE_PAGE = 'page::item';
+    const TYPE_PAGE = 'menu::page';
     
     /**
      * Название таблицы

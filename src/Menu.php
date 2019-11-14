@@ -431,8 +431,8 @@ XML;
                 break;
             case self::TYPE_PAGE:
                 /** @var $page Page */
-                $page = Page::where(['id' => $request->input('data.alias_id')])->first();
-                
+                $page = Page::where(['id' => $request->input('data.item_id')])->first();
+              
                 return [
                     'route' => $page->getRoute(),
                     'instance' => MenuController::class
