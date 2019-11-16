@@ -55,6 +55,9 @@ class MenuEventServiceProvider extends ServiceProvider
         'FastDog\Menu\Events\PageAdminBeforeSave' => [
             'FastDog\Menu\Listeners\PageAdminBeforeSave',
         ],
+        'FastDog\Core\Events\GetComponentType' => [
+            'FastDog\Menu\Listeners\GetComponentType',// <-- Добавляем типы в список компонентов
+        ],
     ];
 
 
