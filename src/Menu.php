@@ -242,22 +242,6 @@ XML;
     /**
      * Возвращает доступные типы меню
      *
-     * Типы меню должны быть определены в файле module.json в секции 'menu', пример:
-     * <pre>
-     *   "menu": [
-     *              {
-     *                  "id": "menu",
-     *                  "name": "Родительский тип меню",
-     *                  "sort": 1
-     *              },
-     *              {
-     *                  "id": "static",
-     *                  "name": "Внешняя ссылка",
-     *                  "sort": 20
-     *              }
-     * ],
-     * </pre>
-     *
      * @return null|object|array
      */
     public function getMenuType()
@@ -271,12 +255,14 @@ XML;
     }
 
     /**
+     * Пути к шаблонам пунктов меню
+     *
      * @return array
      */
     public function getTemplatesPaths(): array
     {
         return [
-            'menu' => '/menu/parent/*.blade.php',
+            'page' => '/vendor/fast_dog/menu/page/*.blade.php',
         ];
     }
 
@@ -334,7 +320,7 @@ XML;
     {
         $result = [];
 
-        foreach (\App::make(ModuleManager::class)->getModules() as $module) {
+        foreach (app()->make(ModuleManager::class)->getModules() as $module) {
             $module['menu']()->each(function($data) use (&$result) {
                 array_push($result, $data);
             });
