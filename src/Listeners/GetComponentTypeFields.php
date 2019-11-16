@@ -6,7 +6,7 @@ namespace FastDog\Menu\Listeners;
 use FastDog\Core\Models\DomainManager;
 use FastDog\Core\Models\FormFieldTypes;
 use FastDog\Menu\Models\Menu;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use FastDog\Core\Events\GetComponentTypeFields as GetComponentTypeEvent;
 
@@ -45,12 +45,11 @@ class GetComponentTypeFields
             'type' => FormFieldTypes::TYPE_SELECT,
             'name' => 'item_id',
             'form_group' => false,
-            'label' => trans('menu::modules.menu_items'),
+            'label' => trans('menu::modules.menu_item'),
             'items' => $this->getMenuTree(),
             'option_group' => false,
-            'expression' => 'function(item){ return (item.type.id == "menu::item") }',
+            'expression' => 'function(item){ return (item.type.id == "menu::menu") }',
         ]);
-
 
         if (config('app.debug')) {
             $data['_events'][] = __METHOD__;
