@@ -48,7 +48,17 @@ class GetComponentType
                 [
                     'id' => 'menu',
                     'name' => trans('menu::interface.Меню') . ' :: ' . trans('menu::modules.menu'),
-                    'templates' => Components::getTemplates($paths . '/vendor/fast_dog/menu/components/*.blade.php'),
+                    'templates' => Components::getTemplates($paths . '/vendor/fast_dog/menu/components/menu/*.blade.php'),
+                ],
+                [
+                    'id' => 'static',
+                    'name' => trans('menu::interface.Меню') . ' :: ' . trans('menu::modules.static'),
+                    'templates' => [],
+                ],
+                [
+                    'id' => 'alias',
+                    'name' => trans('menu::interface.Меню') . ' :: ' . trans('menu::modules.alias'),
+                    'templates' => [],
                 ],
             ],
         ]);
