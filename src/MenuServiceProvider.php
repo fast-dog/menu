@@ -30,6 +30,7 @@ class MenuServiceProvider extends LaravelServiceProvider
         $this->handleRoutes();
         $this->handleMigrations();
         $this->handleLang();
+        $this->handleViews();
 
 //        $this->publishes([
 //            __DIR__ . DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR =>
@@ -104,6 +105,20 @@ class MenuServiceProvider extends LaravelServiceProvider
         $this->loadTranslationsFrom($path, self::NAME);
         $this->publishes([
             $path => resource_path('lang/vendor/fast_dog/' . self::NAME),
+        ]);
+    }
+
+    /**
+     * Определение представлении пакета (шаблонов по умолчанию)
+     */
+    private function handleViews(): void
+    {
+        $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR;
+        $this->loadViewsFrom($path, self::NAME);
+
+        $this->publishes([
+            __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR =>
+                base_path('resources/views/vendor/fast_dog/'),
         ]);
     }
 }
