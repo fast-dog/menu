@@ -32,16 +32,9 @@ class MenuServiceProvider extends LaravelServiceProvider
         $this->handleLang();
         $this->handleViews();
 
-//        $this->publishes([
-//            __DIR__ . DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR =>
-//                base_path('resources/views/'),
-//        ]);
 
-
-        /**
-         * @var $moduleManager ModuleManager
-         */
-        $moduleManager = \App::make(ModuleManager::class);
+        /**  @var $moduleManager ModuleManager */
+        $moduleManager = $this->app->make(ModuleManager::class);
         $moduleManager->pushModule(Menu::MODULE_ID, (new Menu())->getModuleInfo());
     }
 
