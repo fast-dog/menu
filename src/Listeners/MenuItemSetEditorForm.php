@@ -213,10 +213,19 @@ class MenuItemSetEditorForm
                     [
                         'id' => 'access',
                         'type' => FormFieldTypes::TYPE_ACCESS_LIST,
-                        'name' => Menu::SITE_ID, 'label' => trans('menu::forms.general.fields.access'),
+                        'name' => Menu::SITE_ID,
+                        'label' => trans('menu::forms.general.fields.access'),
                         'items' => DomainManager::getAccessDomainList(),
                         'css_class' => 'col-sm-12',
                         'active' => DomainManager::checkIsDefault(),
+                    ],
+                    [
+                        'id' => Menu::STATE,
+                        'type' => FormFieldTypes::TYPE_SELECT,
+                        'name' => Menu::STATE,
+                        'label' => trans('content::forms.fields.state'),
+                        'css_class' => 'col-sm-12',
+                        'items' => Menu::getStatusList(),
                     ],
                     [
                         'id' => 'menu_id',
