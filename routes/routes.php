@@ -143,11 +143,11 @@ Route::group([
     }
 );
 
-if (!\App::runningInConsole()) {
+if (!app()->runningInConsole()) {
     /**
      * Получаем активные пункты меню для определения параметров доступных маршрутов
      */
-    \FastDog\Menu\Models\Menu::where(function (Builder $query) {
+    \FastDog\Menu\Menu::where(function (Builder $query) {
         $query->where(Menu::SITE_ID, DomainManager::getSiteId());
         $query->where(Menu::STATE, Menu::STATE_PUBLISHED);
         $query->where(function (Builder $query) {
@@ -155,7 +155,7 @@ if (!\App::runningInConsole()) {
                 //->whereRaw(\DB::raw('data->"$.type" != \'catalog_index\''))
                 ->whereRaw(\DB::raw('data->"$.type" != \'catalog_categories\''));
         });
-    })->get()->each(function (\FastDog\Menu\Models\Menu $item) {
+    })->get()->each(function (\FastDog\Menu\Menu $item) {
         $data = $item->getData();
         if (isset($item->route) && (!in_array($item->route, ['#', 'menu']))) {
             if (isset($data['data']->route_data)) {
