@@ -199,12 +199,15 @@ XML;
         $domainsCode = DomainManager::getScopeIds();
 
         $list = DomainManager::getAccessDomainList();
+
         foreach ($domainsCode as $code) {
             $_code = $code;
-            $currentPath = str_replace('modules', 'public/' . $code . '/modules', $paths);
+            $currentPath = str_replace('{SITE_ID}', $code, $paths);
+
             if (isset($list[$code])) {
                 $code = $list[$code]['name'];
             }
+
             if ($currentPath !== '') {
                 $description = [];
                 if (file_exists(dirname($currentPath) . '/.description.php') && $description == []) {
@@ -270,7 +273,7 @@ XML;
     public function getTemplatesPaths(): array
     {
         return [
-            'page' => '/vendor/fast_dog/menu/page/*.blade.php',
+            'page' => '/vendor/fast_dog/{SITE_ID}/menu/page/*.blade.php',
         ];
     }
 
@@ -294,7 +297,7 @@ XML;
                         'id' => self::MODULE_ID . '::' . $item['id'],
                         'name' => $item['name'],
                         'sort' => $item['sort'],
-                        'templates' => (isset($templates_paths[$id])) ? $this->getTemplates($paths . $templates_paths[$id]) : [],
+                        'templates' => (isset($templates_paths[$item['id']])) ? $this->getTemplates($paths . $templates_paths[$item['id']]) : [],
                         'class' => __CLASS__,
                     ]);
                 }
