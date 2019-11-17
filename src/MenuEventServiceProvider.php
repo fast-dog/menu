@@ -61,6 +61,8 @@ class MenuEventServiceProvider extends ServiceProvider
         'FastDog\Core\Events\GetComponentTypeFields' => [
             'FastDog\Menu\Listeners\GetComponentTypeFields',// <-- Добавляем зависимые поля в форму компонентов
         ],
+        'FastDog\Menu\Events\BeforePrepareContent' => [// <--  Перед получением контента
+        ]
     ];
 
 

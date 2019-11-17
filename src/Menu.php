@@ -9,6 +9,7 @@ use FastDog\Core\Models\Components;
 use FastDog\Core\Models\DomainManager;
 use FastDog\Core\Models\ModuleManager;
 use FastDog\Core\Store;
+use FastDog\Menu\Events\BeforePrepareContent;
 use FastDog\Menu\Http\Controllers\Site\MenuController;
 use FastDog\Menu\Models\Menu as BaseMenu;
 use FastDog\Menu\Models\Page;
@@ -97,9 +98,10 @@ XML;
      */
     public static function buildRoute(Menu $item, $data, Request $request)
     {
+        // показывать не авторизованным пользователям?
         $showGuest = $item->getParameterByFilterData(['name' => 'SHOW_GUEST'], 'N') === 'Y';
 
-        if ($showGuest === false && \Auth::guest() === true) {
+        if ($showGuest === false && auth()->guest() === true) {
             $redirect = $item->getParameterByFilterData(['name' => 'REDIRECT_TO'], null);
             $redirectCode = $item->getParameterByFilterData(['name' => 'REDIRECT_CODE'], 302);
 
@@ -109,59 +111,65 @@ XML;
                 return redirect(url($redirect), $redirectCode);
             }
         }
-        /**
+        /*
          * Обработка маршрута, если установлены параметры инициализации
          * модуля, запрашиваем контент, во всех остальных случаях,
          * если не предусмотрен маршрут перенаправления, выдаем ошибку 400
          */
 
         if (isset($data['data']->route_data->instance) || (isset($data['data']->route_instance))) {
-            /**
-             * @var $instance PrepareContent
-             */
+
             if (isset($data['data']->route_data->instance)) {
+                /** @var $instance PrepareContent */
                 $instance = new $data['data']->route_data->instance();
             } else {
                 if (isset($data['data']->route_instance)) {
+                    /** @var $instance PrepareContent */
                     $instance = new $data['data']->route_instance();
                 }
             }
             /**
              * Определение фильтра меню для каталога (модулей каталога)
-             * TODO: перенести в событие
+             *
+             * TODO: перенести в событие BeforePrepareContent модуля Каталог
              */
-            $setFilters = [
-                'QUERY' => null,
-                'IN' => [], //<-- Суррогатные идентификаторы свойства+парамтера (facet_id) для выборки в условие IN (MySql)
-                'RANGE' => [], //<-- Диапазоны значении для inner join
-                'ITEMS' => [],//<-- Выборка из бд
-                'PARAMETERS' => [],//<-- Параметры поиска
-                'CATEGORY_IDS' => [],//<-- Категории
-                'TOTAL' => 0,
-                'ERRORS' => false,
-                'PRICE_MATRIX' => [],//<-- Диапазон ценовых предложений
-            ];
-            $category_id = null;
-            $item->catalogProperties->each(function($item) use (&$setFilters, &$category_id) {
-                $facet_id = $item->property_id + $item->category_id + (int)$item->value + $item->property->created_at->timestamp;
-                $category_id = $item->category_id;
-                switch ($item->property->type) {
-                    case 'list':
-                        $setFilters['PARAMETERS'][$item->property_id][] = $facet_id;
-                        break;
-                    default:
-                        break;
-                }
-            });
+//            $setFilters = [
+//                'QUERY' => null,
+//                'IN' => [], //<-- Суррогатные идентификаторы свойства+парамтера (facet_id) для выборки в условие IN (MySql)
+//                'RANGE' => [], //<-- Диапазоны значении для inner join
+//                'ITEMS' => [],//<-- Выборка из бд
+//                'PARAMETERS' => [],//<-- Параметры поиска
+//                'CATEGORY_IDS' => [],//<-- Категории
+//                'TOTAL' => 0,
+//                'ERRORS' => false,
+//                'PRICE_MATRIX' => [],//<-- Диапазон ценовых предложений
+//            ];
+//            $category_id = null;
+//            $item->catalogProperties->each(function($item) use (&$setFilters, &$category_id) {
+//                $facet_id = $item->property_id + $item->category_id + (int)$item->value + $item->property->created_at->timestamp;
+//                $category_id = $item->category_id;
+//                switch ($item->property->type) {
+//                    case 'list':
+//                        $setFilters['PARAMETERS'][$item->property_id][] = $facet_id;
+//                        break;
+//                    default:
+//                        break;
+//                }
+//            });
+//
+//            if ($category_id != null) {
+//                $setFilters['CATEGORY_IDS'] = Category::getChildrenIds($category_id);
+//                $request->merge(['setFilters' => $setFilters]);
+//            }
 
-            if ($category_id != null) {
-                $setFilters['CATEGORY_IDS'] = Category::getChildrenIds($category_id);
-                $request->merge(['setFilters' => $setFilters]);
-            }
+            event(new BeforePrepareContent($request, $item, $data));
 
             return $instance->prepareContent($request, $item, $data);
         }
 
+        /*
+         * Параметры редиректа
+         */
         $redirect = $item->getParameterByFilterData(['name' => 'REDIRECT_TO'], null);
         $redirectCode = $item->getParameterByFilterData(['name' => 'REDIRECT_CODE'], 302);
 

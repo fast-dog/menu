@@ -159,13 +159,6 @@ if (!\App::runningInConsole()) {
         $data = $item->getData();
         if (isset($item->route) && (!in_array($item->route, ['#', 'menu']))) {
             if (isset($data['data']->route_data)) {
-                /**
-                 * Зарезервированные в других модулях маршруты:
-                 *
-                 * catalog - главная каталога
-                 */
-                if (!in_array($item->route, ['catalog'])) {
-                }
                 \Route::get($item->route, function (Request $request) use ($item, $data) {
                     return FastDog\Menu\Menu::buildRoute($item, $data, $request);
                 });
