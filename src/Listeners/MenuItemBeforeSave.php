@@ -6,6 +6,7 @@ use FastDog\Menu\Models\Menu;
 use FastDog\Menu\Events\MenuItemBeforeSave as MenuItemBeforeSaveEvent;
 use FastDog\User\Models\User;
 use Illuminate\Http\Request;
+use FastDog\Core\Models\ModuleManager;
 
 /**
  * Перед сохранением
@@ -76,6 +77,21 @@ class MenuItemBeforeSave
                 ]);
             }
         }
+
+        app()->make(ModuleManager::class)->getModules()
+            ->each(function ($__data) use (&$data, $item) {
+                collect($__data['module_type'])->each(function ($type) use ($__data, &$data, $item) {
+                    if ($__data['id'] . '::' . $type['id'] === $this->request->input('type.id')) {
+                        if ($data['route'] instanceof \Closure) {
+                            $routeData = $__data['route']($this->request, $item);
+                            if ($routeData['route'] || (isset($routeData['alias']) && $routeData['alias'])) {
+                                $updateData[Menu::ROUTE] = $routeData['route'];
+                                $data['route_data'] = $routeData;
+                            }
+                        }
+                    }
+                });
+            });
 
         $event->setData($data);
     }

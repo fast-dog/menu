@@ -207,27 +207,8 @@ class MenuFormController extends Controller implements FormControllerInterface
             // Обновляем параметры пункта меню
             $_data = [];
 
-            app()->make(ModuleManager::class)->getModules()
-                ->each(function ($data) use (&$_data, $request, $item) {
-                    collect($data['module_type'])->each(function ($type) use ($data, &$_data, $request, $item) {
-                        if ($data['id'] . '::' . $type['id'] === $request->input('type.id')) {
-                            if ($data['route'] instanceof \Closure) {
-                                $routeData = $data['route']($request, $item);
-                                if ($routeData['route'] || (isset($routeData['alias']) && $routeData['alias'])) {
-                                    $updateData[Menu::ROUTE] = $routeData['route'];
-                                    $_data['route_data'] = $routeData;
-                                }
-                            }
-                        }
-                    });
-                });
 
-            $_data['meta_title'] = $request->input('data.meta_title', $data[Menu::NAME]);
-            $_data['meta_description'] = $request->input('data.meta_description');
-            $_data['meta_keywords'] = $request->input('data.meta_keywords');
-            $_data['meta_robots'] = $request->input('data.meta_robots');
 
-            $updateData['data'] = json_encode($_data);
 
             // Изменен код доступа к пункту меню
             if ($updateData[Menu::SITE_ID] <> $itemData[Menu::SITE_ID]) {
