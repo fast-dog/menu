@@ -53,6 +53,10 @@ class MenuResources
                     'route_instance' => [
                         'id' => $item->id,
                         'value' => $item->{Page::NAME}
+                    ],
+                    'template' => [
+                        'id' => 'theme#000::menu.page.default',
+                        'name' => trans('menu::templates.default')
                     ]
                 ]
             ]);

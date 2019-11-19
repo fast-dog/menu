@@ -89,7 +89,9 @@ class MenuFormController extends Controller implements FormControllerInterface
                 'type' => $item['type'],
                 'name' => $item['name'],
                 'alias' => '',
-                'data' => $item['data']
+                'data' => $item['data'],
+                'route_instance' => $item['data']['route_instance'],
+                'template' => $item['data']['template'],
             ]);
 
             $this->postMenu($request);
