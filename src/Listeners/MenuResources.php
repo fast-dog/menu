@@ -2,6 +2,7 @@
 
 namespace FastDog\Menu\Listeners;
 
+use FastDog\Menu\Http\Controllers\Site\MenuController;
 use FastDog\Menu\Models\Page;
 use Illuminate\Http\Request;
 
@@ -52,7 +53,8 @@ class MenuResources
                 'data' => [
                     'route_instance' => [
                         'id' => $item->id,
-                        'value' => $item->{Page::NAME}
+                        'value' => $item->{Page::NAME},
+                        'instance' => MenuController::class
                     ],
                     'template' => [
                         'id' => 'theme#000::menu.page.default',
