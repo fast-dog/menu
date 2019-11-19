@@ -38,25 +38,16 @@ class MenuItemBeforeSave
      */
     public function handle(MenuItemBeforeSaveEvent $event)
     {
-        /**
-         * @var $user User
-         */
-        $user = \Auth::getUser();
+        /** @var $user User */
+        $user = auth()->getUser();
 
-        /**
-         * @var $data array
-         */
+        /**  @var $data array */
         $data = $event->getData();
 
-        if (is_string($data['data'])) {
-            $data['data'] = json_decode($data['data']);
-        }
-        /**
-         * @var $item Menu
-         */
+        /** @var $item Menu */
         $item = $event->getItem();
 
-        /**
+        /*
          * Передаем флаг обновления канонических ссылок
          */
         if ($data[Menu::ALIAS] !== $item->{Menu::ALIAS}) {
@@ -85,36 +76,6 @@ class MenuItemBeforeSave
                 ]);
             }
         }
-
-        /**
-         * Парамтеры пакуемые в json объект data
-         */
-        $packParameters = [
-            'type' => 'type.id',
-            'template' => 'template',
-            'category_id' => 'category_id.id',
-            'url' => 'url',
-            'route_instance' => 'route_instance',
-            'item_id' => 'item_id',
-            'form_id' => 'form_id.id',
-            'image' => 'image',
-            'alias_id' => 'alias_id',
-            'alias_menu_id' => 'alias_menu_id',
-//            'meta_title' => 'meta_title',
-//            'meta_description' => 'meta_description',
-//            'meta_keywords' => 'meta_keywords',
-//            'meta_robots' => 'meta_robots',
-        ];
-
-        $allData = $this->request->all();
-
-        $data['data'] = (array)$data['data'];
-
-        foreach ($packParameters as $name => $id) {
-            $data['data'][$name] = $this->request->input($id);
-        }
-
-        $data['data'] = json_encode($data['data']);
 
         $event->setData($data);
     }

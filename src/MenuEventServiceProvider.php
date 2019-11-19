@@ -13,13 +13,14 @@ class MenuEventServiceProvider extends ServiceProvider
      */
     protected $listen = [
         'FastDog\Menu\Events\MenuItemBeforeSave' => [
+            'FastDog\Core\Listeners\ModelBeforeSave',//<-- упаковка данных с формы в json поле data
             'FastDog\Menu\Listeners\MenuItemBeforeSave',
         ],
         'FastDog\Menu\Events\MenuItemAfterSave' => [
             'FastDog\Menu\Listeners\MenuItemAfterSave',
         ],
         'FastDog\Menu\Events\MenuItemAdminPrepare' => [
-            'FastDog\Core\Listeners\AdminItemPrepare',// <-- Поля даты обновления и т.д.
+            'FastDog\Core\Listeners\AdminItemPrepare',// <-- Поля даты обновления и т.д., распаковка из json поля data
             'FastDog\Core\Listeners\MetadataAdminPrepare',// <-- SEO
             'FastDog\Menu\Listeners\MenuItemAdminPrepare',
             'FastDog\Menu\Listeners\MenuItemSetEditorForm',

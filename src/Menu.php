@@ -416,10 +416,14 @@ XML;
                 break;
             case self::TYPE_PAGE:
                 /** @var $page Page */
-                $page = Page::where(['id' => $request->input('data.item_id')])->first();
+                $page = Page::where(['id' => $request->input('route_instance.id')])->first();
+
+                $request->merge([
+                    'route_instance' => $request->input('data.route_instance')
+                ]);
 
                 return [
-                    'route' => $page->getRoute(),
+                    'route' => ($page) ? $page->getRoute() : null,
                     'instance' => MenuController::class
                 ];
                 break;

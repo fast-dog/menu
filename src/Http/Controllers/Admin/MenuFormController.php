@@ -91,6 +91,7 @@ class MenuFormController extends Controller implements FormControllerInterface
                 'alias' => '',
                 'data' => $item['data']
             ]);
+
             $this->postMenu($request);
         }
 

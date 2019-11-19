@@ -352,6 +352,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
      * Определение типа меню
      *
      * @return string
+     * @deprecated
      */
     public function getType(): string
     {
@@ -372,6 +373,7 @@ class Menu extends Node implements TableModelInterface, PropertiesInterface, Med
      * Получение типа меню
      *
      * @return null
+     * @deprecated
      */
     public function getExtendType()
     {
@@ -494,38 +496,6 @@ SQL
         return (isset($count[0]->count)) ? $count[0]->count : 0;
     }
 
-
-//    /**
-//     * Типы меню в проекте
-//     *
-//     * @return array
-//     */
-//    public static function getTypes()
-//    {
-//        $result = [];
-//        /**
-//         * @var  $moduleManager ModuleManager
-//         */
-//        $moduleManager = \App::make('ModuleManager');
-//        $modules = $moduleManager->getModules();
-//        /**
-//         * @var $module ModuleInterface
-//         */
-//        foreach ($modules as $module) {
-//            $moduleType = $module->getMenuType();
-//            if (is_array($moduleType) && count($moduleType) > 0) {
-//                foreach ($moduleType as $item) {
-//                    array_push($result, (object)$item);
-//                }
-//            }
-//        }
-//
-//        usort($result, function ($a, $b) {
-//            return $a->sort - $b->sort;
-//        });
-//
-//        return $result;
-//    }
 
     /**
      * Ссылка
@@ -724,9 +694,9 @@ SQL
      * Обновляет количество ошибок при переходе по маршруту текущего пункта меню
      * @return int
      */
-    public function error()
+    public function error(): void
     {
-        return $this->increment(self::STAT_ERROR);
+        $this->increment(self::STAT_ERROR);
     }
 
     /**
@@ -735,9 +705,9 @@ SQL
      * Обновляет количество перенаправлени при переходе по маршруту текущего пункта меню
      * @return int
      */
-    public function redirect()
+    public function redirect(): void
     {
-        return $this->increment(self::STAT_REDIRECT);
+        $this->increment(self::STAT_REDIRECT);
     }
 
     /**
@@ -746,7 +716,7 @@ SQL
      * Обновляет количество успешных переходов по маршруту текущего пункта меню
      * @return int
      */
-    public function success()
+    public function success(): void
     {
         $this->increment(self::STAT_SUCCESS);
     }
@@ -1021,6 +991,7 @@ SQL
      *
      * @param string $site_id
      * @return array
+     * @deprecated  add event
      */
     public function getRoutes($site_id = '000')
     {
@@ -1140,6 +1111,29 @@ SQL
             ['id' => self::STATE_PUBLISHED, 'name' => trans('menu::interface.state_list.published')],
             ['id' => self::STATE_NOT_PUBLISHED, 'name' => trans('menu::interface.state_list.not_published')],
             ['id' => self::STATE_IN_TRASH, 'name' => trans('menu::interface.state_list.in_trash')],
+        ];
+    }
+
+    /**
+     * Имена упакованных в json объект данных модели,
+     * вызывается при извлечение/упаковки этих данных в объект data,
+     * используется в FastDog\Core\Listeners\ModelBeforeSave
+     *
+     * @return array
+     */
+    public function getExtractParameterNames(): array
+    {
+        return [
+            'type' => 'type.id',
+            'template' => 'template',
+            'category_id' => 'category_id.id',
+            'url' => 'url',
+            'route_instance' => 'route_instance',
+            'item_id' => 'item_id',
+            'form_id' => 'form_id.id',
+            'image' => 'image',
+            'alias_id' => 'alias_id',
+            'alias_menu_id' => 'alias_menu_id',
         ];
     }
 }
