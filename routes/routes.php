@@ -62,6 +62,10 @@ Route::group([
             'uses' => $ctrl . '@list',
         ])->where('id', '[0-9]+');
 
+        // Поиск по страницам
+        \Route::post('/page/search-list', [
+            'uses' => $ctrl . '@getPageSearch',
+        ]);
 
         //Форма - Меню
         $ctrl = '\FastDog\Menu\Http\Controllers\Admin\MenuFormController';

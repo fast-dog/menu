@@ -154,5 +154,28 @@ class PageTableController extends Controller implements TableControllerInterface
         // TODO: Implement items() method.
     }
 
+    /**
+     * Поиск страницы по имени
+     *
+     * метод используется при выборе материалов в меню\публичных модулях
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getPageSearch(Request $request)
+    {
+        $result = ['success' => true, 'items' => []];
 
+        $items = Page::where(function(Builder $query) use ($request) {
+            $query->where(Page::NAME, 'LIKE', '%' . $request->input('filter.query') . '%');
+        })->paginate(self::PAGE_SIZE)->each(function(Page $item) use (&$result) {
+            array_push($result['items'], [
+                'id' => $item->id,
+                Page::NAME => $item->{Page::NAME},
+                'value' => $item->{Page::NAME},
+            ]);
+        });
+
+        return $this->json($result, __METHOD__);
+    }
 }

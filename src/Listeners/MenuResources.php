@@ -17,24 +17,24 @@ class MenuResources
      * @var Request
      */
     protected $request;
-    
+
     /**
      * UpdateProfile constructor.
-     * @param  Request  $request
+     * @param Request $request
      */
     public function __construct(Request $request)
     {
         $this->request = $request;
     }
-    
+
     /**
-     * @param  \FastDog\Menu\Events\MenuResources  $event
+     * @param \FastDog\Menu\Events\MenuResources $event
      */
     public function handle(\FastDog\Menu\Events\MenuResources $event)
     {
-        
+
         $data = $event->getData();
-        
+
         if (!$data['resource']) {
             $data['resource'] = [];
         }
@@ -43,22 +43,25 @@ class MenuResources
             'name' => trans('menu::interface.Страницы'),
             'items' => collect([]),
         ];
-        
-        Page::all()->each(function (Page $item) use (&$data) {
+
+        Page::all()->each(function(Page $item) use (&$data) {
             $data['resource']['pages']['items']->push([
                 'id' => 'menu::page',
                 'name' => $item->{Page::NAME},
-                'sort' => (int) $item->{Page::SORT},
+                'sort' => (int)$item->{Page::SORT},
                 'data' => [
-                    'item_id' => $item->id
+                    'route_instance' => [
+                        'id' => $item->id,
+                        'value' => $item->{Page::NAME}
+                    ]
                 ]
             ]);
         });
-        
+
         if (config('app.debug')) {
             $data['_events_'][] = __METHOD__;
         }
-        
+
         $event->setData($data);
     }
 }
