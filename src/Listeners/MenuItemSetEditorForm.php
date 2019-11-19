@@ -163,7 +163,7 @@ class MenuItemSetEditorForm
                 'type' => FormFieldTypes::TYPE_SEARCH,
                 'id' => 'route_instance',
                 'name' => 'route_instance',
-                'label' => trans('menu::interface.Материал'),
+                'label' => trans('menu::interface.Страница'),
                 'expression' => 'function(item){ return (item.type.id == "menu::page"); }',
                 'data_url' => "page/search-list",
                 'css_class' => 'col-sm-12',
