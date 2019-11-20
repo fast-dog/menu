@@ -86,7 +86,7 @@ Route::group([
         ]);
 
         // API
-        $ctrl = '\FastDog\Menu\Menu\Http\Controllers\Admin\ApiController';
+        $ctrl = '\FastDog\Menu\Http\Controllers\Admin\ApiController';
 
         // Страница информации\настроек параметров\доступа
         \Route::get('/menu/admin-info', [

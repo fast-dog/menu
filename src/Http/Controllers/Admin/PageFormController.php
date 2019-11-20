@@ -43,7 +43,7 @@ class PageFormController extends Controller implements FormControllerInterface
      */
     public function getEditItem(Request $request): JsonResponse
     {
-        $this->breadcrumbs->push(['url' => '/menu/index', 'name' => trans('menu::interface.Управление')]);
+        $this->breadcrumbs->push(['url' => '/menu/index', 'name' => trans('menu::interface.Меню')]);
 
         $result = $this->getItemData($request);
         $result['item'] = array_first($result['items']);

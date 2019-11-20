@@ -5,6 +5,7 @@ namespace FastDog\Menu\Http\Controllers\Admin;
 
 use FastDog\Config\Models\Translate;
 use FastDog\Core\Http\Controllers\Controller;
+use FastDog\Core\Models\BaseModel;
 use FastDog\Core\Models\DomainManager;
 use FastDog\Core\Models\ModuleManager;
 use FastDog\Core\Table\Traits\TableTrait;
@@ -31,11 +32,9 @@ class ApiController extends Controller
     use TableTrait;
 
     /**
-     * Имя родительского списка доступа
-     *
-     * @var string $accessKey
+     * @var BaseModel $model
      */
-    protected $accessKey = '';
+    protected $model;
 
     /**
      * ApiController constructor.
@@ -239,22 +238,22 @@ SQL
                 ],
             ],
         ];
+
+        $this->breadcrumbs->push([
+            'url' => '/menu/index',
+            'name' => trans('menu::interface.Меню')
+        ]);
         $this->breadcrumbs->push(['url' => false, 'name' => trans('menu::interface.Диагностика')]);
 
-        /**
-         * @var $root Menu
-         */
+        /** @var $root Menu */
         $root = Menu::where([
             'lft' => 1,
             Menu::SITE_ID => DomainManager::getSiteId(),
         ])->first();
 
         Carbon::setLocale('ru');
-        $items = $root->getDescendantsAndSelf();
-        /**
-         * @var $item Menu
-         */
-        foreach ($items as $item) {
+
+        $root->getDescendantsAndSelf()->each(function(Menu $item) use ($result) {
             $data = $item->getData(false);
             $data['result'] = '';
             $check = $item->check;
@@ -299,7 +298,8 @@ SQL
                 $data['result'] = '<span class="label">' . trans('app.нет данных') . '</span>';
             }
             array_push($result['items'], $data);
-        }
+        });
+
 
         return $this->json($result, __METHOD__);
     }

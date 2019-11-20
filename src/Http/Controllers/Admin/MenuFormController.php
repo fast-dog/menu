@@ -46,7 +46,7 @@ class MenuFormController extends Controller implements FormControllerInterface
      */
     public function getEditItem(Request $request): JsonResponse
     {
-        $this->breadcrumbs->push(['url' => '/menu/index', 'name' => trans('menu::interface.Управление')]);
+        $this->breadcrumbs->push(['url' => '/menu/index', 'name' => trans('menu::interface.Меню')]);
         $parent_id = \Route::input('parent_id', null);
         $parent = null;
         //Отключаем кэширование в методе Menu::getData(cached)

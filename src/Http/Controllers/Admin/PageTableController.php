@@ -5,6 +5,7 @@ namespace FastDog\Menu\Http\Controllers\Admin;
 
 use Baum\Extensions\Eloquent\Model;
 use FastDog\Core\Http\Controllers\Controller;
+use FastDog\Core\Models\BaseModel;
 use FastDog\Core\Models\DomainManager;
 use FastDog\Core\Table\Interfaces\TableControllerInterface;
 use FastDog\Core\Table\Traits\TableTrait;
@@ -53,7 +54,7 @@ class PageTableController extends Controller implements TableControllerInterface
     /**
      * Модель, контекст выборок
      *
-     * @return  Model
+     * @return  BaseModel
      */
     public function getModel()
     {
@@ -116,6 +117,8 @@ class PageTableController extends Controller implements TableControllerInterface
     public function list(Request $request): JsonResponse
     {
         $result = self::paginate($request);
+
+        $this->breadcrumbs->push(['url' => '/menu/index', 'name' => trans('menu::interface.Меню')]);
         $this->breadcrumbs->push(['url' => false, 'name' => trans('menu::interface.Страницы')]);
 
         return $this->json($result, __METHOD__);

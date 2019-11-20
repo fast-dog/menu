@@ -197,7 +197,7 @@ class MenuTableController extends Controller implements TableControllerInterface
 
         $this->breadcrumbs->push([
             'url' => '/menu/index',
-            'name' => trans('menu::interface.Список доступных меню')
+            'name' => trans('menu::interface.Меню')
         ]);
 
 
