@@ -52,7 +52,7 @@ class ApiController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getInfo(Request $request)
+    public function getInfo(Request $request):JsonResponse
     {
         $result = [
             'success' => true,
@@ -88,7 +88,7 @@ class ApiController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function postClearCache(Request $request)
+    public function postClearCache(Request $request):JsonResponse
     {
         $result = ['success' => true, 'message' => ''];
         $tag = $request->input('tag');
@@ -118,7 +118,7 @@ class ApiController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getDiagnostic(Request $request)
+    public function getDiagnostic(Request $request):JsonResponse
     {
         $result = [
             'success' => true,
@@ -195,12 +195,10 @@ SQL
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function postCheckRoute(Request $request)
+    public function postCheckRoute(Request $request):JsonResponse
     {
-        /**
-         * @var $user User
-         */
-        $user = \Auth::getUser();
+        /** @var $user User */
+        $user = auth()->getUser();
 
         $result = [
             'success' => true,
@@ -253,11 +251,11 @@ SQL
 
         Carbon::setLocale('ru');
 
-        $root->getDescendantsAndSelf()->each(function(Menu $item) use ($result) {
+        $root->getDescendantsAndSelf()->each(function(Menu $item) use (&$result) {
             $data = $item->getData(false);
             $data['result'] = '';
             $check = $item->check;
-
+            $data[Menu::NAME] = str_repeat('┊  ', $data[Menu::DEPTH]) . ' ' . $data[Menu::NAME];
             if ($check) {
                 $data['checked_at'] =
                     '<i class="fa fa-clock-o" data-toggle="tooltip" title="' . $check->updated_at->format('d.m.y H:i') . '"></i> ' .
@@ -266,36 +264,36 @@ SQL
                 switch ($check->code) {
                     case 200:
                         $data['result'] = '<a href="' . url($item->getRoute()) . '" target="_blank" data-toggle="tooltip"
-                         title="' . trans('app.код ответа') . ':' . $check->{'code'} . '">';
-                        $data['result'] .= '<span class="label label-primary">' . trans('app.доступно') . '</span></a>';
+                         title="' . trans('menu::interface.http_code') . ':' . $check->{'code'} . '">';
+                        $data['result'] .= '<span class="label label-primary">' . trans('menu::interface.state_check.200') . '</span></a>';
                         break;
                     case 303:
                     case 302:
                         $data['result'] = '<a href="' . url($item->getRoute()) . '" target="_blank" data-toggle="tooltip"
-                         title="' . trans('app.код ответа') . ':' . $check->{'code'} . '">';
-                        $data['result'] .= '<span class="label label-warning">' . trans('app.перенаправление') . '</span></a>';
+                         title="' . trans('menu::interface.http_code') . ':' . $check->{'code'} . '">';
+                        $data['result'] .= '<span class="label label-warning">' . trans('menu::interface.state_check.302') . '</span></a>';
                         break;
                     case 403:
                         $data['result'] = '<a href="' . url($item->getRoute()) . '" target="_blank" data-toggle="tooltip"
-                         title="' . trans('app.код ответа') . ':' . $check->{'code'} . '">';
-                        $data['result'] .= '<span class="label label-danger">' . trans('app.запрещено') . '</span></a>';
+                         title="' . trans('menu::interface.http_code') . ':' . $check->{'code'} . '">';
+                        $data['result'] .= '<span class="label label-danger">' . trans('menu::interface.state_check.403') . '</span></a>';
                         break;
                     case 404:
                         $data['result'] = '<a href="' . url($item->getRoute()) . '" target="_blank" data-toggle="tooltip"
-                         title="' . trans('app.код ответа') . ':' . $check->{'code'} . '">';
-                        $data['result'] .= '<span class="label label-danger">' . trans('app.не доступно') . '</span></a>';
+                         title="' . trans('menu::interface.http_code') . ':' . $check->{'code'} . '">';
+                        $data['result'] .= '<span class="label label-danger">' . trans('menu::interface.state_check.404') . '</span></a>';
                         break;
                     case 424:
                         $data['result'] = '<a href="' . url($item->getRoute()) . '" target="_blank" data-toggle="tooltip"
-                         title="' . trans('app.код ответа') . ':' . $check->{'code'} . '">';
-                        $data['result'] .= '<span class="label label-danger">' . trans('app.не настроено') . '</span></a>';
+                         title="' . trans('menu::interface.http_code') . ':' . $check->{'code'} . '">';
+                        $data['result'] .= '<span class="label label-danger">' . trans('menu::interface.state_check.424') . '</span></a>';
                         break;
                     default:
-                        $data['result'] = '<span class="label">' . trans('app.нет данных') . '</span>';
+                        $data['result'] = '<span class="label">' . trans('menu::interface.state_check.default') . '</span>';
                         break;
                 }
             } else {
-                $data['result'] = '<span class="label">' . trans('app.нет данных') . '</span>';
+                $data['result'] = '<span class="label">' . trans('menu::interface.state_check.default') . '</span>';
             }
             array_push($result['items'], $data);
         });
@@ -311,7 +309,7 @@ SQL
      * @return \Illuminate\Http\JsonResponse
      * @throws \ErrorException
      */
-    public function getCheckRoute(Request $request)
+    public function getCheckRoute(Request $request):JsonResponse
     {
         $result = [
             'success' => true,
