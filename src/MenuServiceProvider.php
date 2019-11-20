@@ -4,6 +4,7 @@ namespace FastDog\Menu;
 
 
 use FastDog\Core\Models\ModuleManager;
+use FastDog\Menu\Console\Commands\SiteMap;
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
 
 /**
@@ -15,9 +16,16 @@ class MenuServiceProvider extends LaravelServiceProvider
     const NAME = 'menu';
 
     /**
-     * @var bool
+     * @var bool $defer
      */
     protected $defer = false;
+
+    /**
+     * @var array  $commands
+     */
+    protected $commands = [
+        SiteMap::class
+    ];
 
     /**
      * Bootstrap the application events.
@@ -32,6 +40,7 @@ class MenuServiceProvider extends LaravelServiceProvider
         $this->handleLang();
         $this->handleViews();
 
+        $this->commands($this->commands);
 
         /**  @var $moduleManager ModuleManager */
         $moduleManager = $this->app->make(ModuleManager::class);

@@ -130,10 +130,10 @@ Route::group([
             'uses' => $ctrl . '@postMenuTemplate',
         ]);
 
-        /**
+        /*
          * Карта сайта
          */
-        $ctrl = '\FastDog\Menu\Menu\Http\Controllers\Admin\Sitemap\TableController';
+        $ctrl = '\FastDog\Menu\Http\Controllers\Admin\Sitemap\TableController';
 
         // Страница информации\настроек параметров\доступа
         \Route::post('/sitemap', [
@@ -178,5 +178,5 @@ if (!app()->runningInConsole()) {
  */
 \Route::get('sitemap.xml', function (Request $request) {
 
-    return self::buildSiteMap($request);
+    return Menu::buildSiteMap($request);
 });

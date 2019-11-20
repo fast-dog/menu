@@ -43,7 +43,7 @@ class SiteMap extends Command
      *
      * @var string $signature
      */
-    protected $signature = 'sitemap {domain?}';
+    protected $signature = 'sitemap';
 
     /**
      * The console command description.
@@ -69,13 +69,11 @@ class SiteMap extends Command
     {
         $routeList = [];
         request()->merge(['_site_id' => '000']);
-        config('app.url', $this->argument('domain'));
-        $site_id = DomainManager::getSiteId($this->argument('domain'));
+        // \Config::set('app.url', $this->argument('domain'));
+        $site_id = '001';//DomainManager::getSiteId($this->argument('domain'));
 
 
-        /**
-         * @var $root Menu
-         */
+        /** @var $root Menu */
         $root = Menu::where([
             'lft' => 1,
             Menu::SITE_ID => $site_id,
@@ -84,7 +82,8 @@ class SiteMap extends Command
 
         $checks = $root->getDescendantsAndSelf();
         try {
-            MenuRouterCheckResult::where(function (Builder $query) {
+
+             MenuRouterCheckResult::where(function (Builder $query) {
                 $query->where(MenuRouterCheckResult::CODE, '=', 200);
             })->get()
                 ->each(function (MenuRouterCheckResult $item) use (&$routeList, $site_id) {
@@ -92,11 +91,10 @@ class SiteMap extends Command
                         $item->menu->getRoutes($site_id);
                     }
                 });
+
             $checker = new Curl();
 
-            /**
-             * @var $check Menu
-             */
+            /** @var $check Menu */
             foreach ($checks as $check) {
                 if ($check->getLevel() > 1) {
                     $route = $check->sanitizeRoute($check->{Menu::ROUTE});
@@ -113,7 +111,7 @@ class SiteMap extends Command
 
                             $checkItem = MenuRouterCheckResult::where([
                                 MenuRouterCheckResult::ITEM_ID => $check->id,
-                                MenuRouterCheckResult::SITE_ID => DomainManager::getSiteId(),
+                                MenuRouterCheckResult::SITE_ID =>  DomainManager::getSiteId(),
                             ])->first();
 
                             if (!$checkItem) {
@@ -122,6 +120,13 @@ class SiteMap extends Command
                                     MenuRouterCheckResult::SITE_ID => DomainManager::getSiteId(),
                                     MenuRouterCheckResult::CODE => $checker->httpStatusCode,
                                 ]);
+                                if ($checker->httpStatusCode == 200) {
+                                     SiteMap::firstOrCreate([
+                                        'route' => $url,
+                                        'priority'=> $this->priority[2],
+                                        'site_id'=>$site_id
+                                    ]);
+                                }
                             } else {
                                 MenuRouterCheckResult::where('id', $checkItem->id)->update([
                                     MenuRouterCheckResult::CODE => $checker->httpStatusCode,
