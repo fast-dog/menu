@@ -72,10 +72,14 @@ class TableController extends Controller implements TableControllerInterface
 
     /**
      * @param Request $request
+     * @return JsonResponse
      */
-    public function reorder(Request $request)
+    public function reorder(Request $request):JsonResponse
     {
-        Artisan::call('sitemap', ['domain' => $request->root()]);
+        $result = ['success' => true];
+        Artisan::call('sitemap'/*, ['domain' => $request->root()]*/);
+
+        return $this->json($result, __METHOD__);
     }
 
     /**
