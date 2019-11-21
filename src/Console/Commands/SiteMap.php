@@ -105,9 +105,16 @@ class SiteMap extends Command
                             url(config('app.url') . $route) : $route;
 
                         if (is_string($url)) {
-                            echo 'check url: ' . $url . PHP_EOL;
+
+                            if(app()->runningInConsole()){
+                                echo 'check url: ' . $url . PHP_EOL;
+                            }
+
                             $checker->get($url);
-                            echo $checker->httpStatusCode . PHP_EOL;
+
+                            if(app()->runningInConsole()){
+                                echo $checker->httpStatusCode . PHP_EOL;
+                            }
 
                             $checkItem = MenuRouterCheckResult::where([
                                 MenuRouterCheckResult::ITEM_ID => $check->id,
