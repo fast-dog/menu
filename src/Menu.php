@@ -593,11 +593,12 @@ XML;
             'name' => trans('menu::interface.Карта сайта'),
             'route' => '/menu/sitemap',
         ]);
-        array_push($result['children'], [
-            'icon' => 'fa-gears',
-            'name' => trans('menu::interface.Настройки'),
-            'route' => '/menu/configuration',
-        ]);
+
+//        array_push($result['children'], [
+//            'icon' => 'fa-gears',
+//            'name' => trans('menu::interface.Настройки'),
+//            'route' => '/menu/configuration',
+//        ]);
 
         return $result;
     }
