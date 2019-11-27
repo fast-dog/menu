@@ -3,6 +3,7 @@
 namespace FastDog\Menu\Listeners;
 
 use FastDog\Core\Models\Notifications;
+use FastDog\Menu\Events\MenuBuildRoute;
 use FastDog\Menu\Models\Menu;
 use FastDog\Menu\Events\MenuItemBeforeSave as MenuItemBeforeSaveEvent;
 use FastDog\User\Models\User;
@@ -79,21 +80,23 @@ class MenuItemBeforeSave
             }
         }
 
-        app()->make(ModuleManager::class)->getModules()
-            ->each(function($__data) use (&$data, $item) {
-                collect($__data['module_type'])->each(function($type) use ($__data, &$data, $item) {
-                    if ($__data['id'] . '::' . $type['id'] === $this->request->input('type.id')) {
-                        if ($__data['route'] instanceof \Closure) {
-                            $routeData = $__data['route']($this->request, $item);
-                            if ($routeData['route'] || (isset($routeData['alias']) && $routeData['alias'])) {
-                                $data[Menu::ROUTE] = $routeData['route'];
-                                $data['data'] = (is_string($data['data'])) ? json_decode($data['data']) : $data['data'];
-                                $data['data']->route_data = $routeData;
-                            }
-                        }
-                    }
-                });
-            });
+         event(new MenuBuildRoute($data, $item));
+
+//        app()->make(ModuleManager::class)->getModules()
+//            ->each(function($__data) use (&$data, $item) {
+//                collect($__data['module_type'])->each(function($type) use ($__data, &$data, $item) {
+//                    if ($__data['id'] . '::' . $type['id'] === $this->request->input('type.id')) {
+//                        if ($__data['route'] instanceof \Closure) {
+//                            $routeData = $__data['route']($this->request, $item);
+//                            if ($routeData['route'] || (isset($routeData['alias']) && $routeData['alias'])) {
+//                                $data[Menu::ROUTE] = $routeData['route'];
+//                                $data['data'] = (is_string($data['data'])) ? json_decode($data['data']) : $data['data'];
+//                                $data['data']->route_data = $routeData;
+//                            }
+//                        }
+//                    }
+//                });
+//            });
 
         $data['data'] = (!is_string($data['data'])) ? json_encode($data['data']) : $data['data'];
 

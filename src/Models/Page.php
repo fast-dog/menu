@@ -151,4 +151,36 @@ class Page extends BaseModel implements TableModelInterface, PropertiesInterface
 
         return $default;
     }
+
+    /**
+     * Сборка маршрута на страницу с учетом парамтеров
+     *
+     * @return string
+     */
+    public function getRoute(): string
+    {
+        $config = config('menu.route.page', null);
+        if ($config === null) {
+            return parent::getRoute();
+        }
+        $result = [];
+        if ($config['prefix']) {
+            array_push($result, $config['prefix']);
+        }
+        $page = [];
+        foreach ($config['schema'] as $k => $const) {
+            if (isset($this->{$const})) {
+                array_push($page, $this->{$const});
+            }
+        }
+        if (count($page)) {
+
+            if ($config['suffix']) {
+                array_push($page, $config['suffix']);
+            }
+
+            array_push($result, implode($config['separator'], $page));
+        }
+        return implode('/', $result);
+    }
 }

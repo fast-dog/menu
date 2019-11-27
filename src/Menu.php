@@ -384,6 +384,7 @@ XML;
      * @param Request $request
      * @param Menu $item
      * @return mixed
+     * @deprecated move to listeners \FastDog\Menu\Listeners\MenuBuildRoute
      */
     public function getMenuRoute($request, $item)
     {

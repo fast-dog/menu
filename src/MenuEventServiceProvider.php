@@ -14,7 +14,8 @@ class MenuEventServiceProvider extends ServiceProvider
     protected $listen = [
         'FastDog\Menu\Events\MenuItemBeforeSave' => [
             'FastDog\Core\Listeners\ModelBeforeSave',//<-- упаковка данных с формы в json поле data
-            'FastDog\Menu\Listeners\MenuItemBeforeSave',
+            'FastDog\Menu\Listeners\MenuItemBeforeSave',//<-- Обновление канонических ссылок и т.д.
+            // 'FastDog\Menu\Listeners\MenuBuildRoute',//<-- Определение маршрута
         ],
         'FastDog\Menu\Events\MenuItemAfterSave' => [
             'FastDog\Menu\Listeners\MenuItemAfterSave',
@@ -63,6 +64,9 @@ class MenuEventServiceProvider extends ServiceProvider
             'FastDog\Menu\Listeners\GetComponentTypeFields',// <-- Добавляем зависимые (от типов) поля в форму редактирования компонентов
         ],
         'FastDog\Menu\Events\BeforePrepareContent' => [// <--  Перед получением контента
+        ],
+        'FastDog\Menu\Events\MenuBuildRoute' => [// <--  Определение маршрута пункта меню
+            'FastDog\Menu\Listeners\MenuBuildRoute',
         ]
     ];
 
